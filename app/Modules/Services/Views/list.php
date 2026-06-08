@@ -64,11 +64,13 @@
 <!-- DATA TABLE -->
 <div class="table-container">
     <?php if (empty($items)): ?>
-        <div class="empty-state">
-            <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
-            <h3 class="empty-title">لا توجد خدمات مطابقة</h3>
-            <p class="empty-desc">لم نعثر على أي خدمات تطابق معايير البحث الحالية. جرب تغيير كلمات البحث أو المرشحات.</p>
-        </div>
+        <?php 
+        $empty_title = 'لا توجد خدمات مطابقة';
+        $empty_desc = 'لم نعثر على أي خدمات تطابق معايير البحث الحالية. جرب تغيير كلمات البحث أو المرشحات.';
+        $empty_action_url = url('admin/services/create');
+        $empty_action_label = 'إضافة خدمة جديدة';
+        include Config::get('app.paths.root') . '/views/components/empty_state.php'; 
+        ?>
     <?php else: ?>
         <table class="table">
             <thead>
@@ -175,40 +177,15 @@
 </div>
 
 <!-- PAGINATION -->
-<?php if ($totalPages > 1): ?>
-    <div class="pagination-container">
-        <div class="pagination-info">
-            عرض عناصر من <strong><?= (($currentPage - 1) * $limit) + 1 ?></strong> إلى <strong><?= min($totalItems, $currentPage * $limit) ?></strong> من أصل <strong><?= $totalItems ?></strong> خدمة.
-        </div>
-        <div class="pagination-buttons">
-            <!-- Previous Button -->
-            <?php if ($currentPage > 1): ?>
-                <a href="?page=<?= $currentPage - 1 ?>&keyword=<?= e($keyword ?? '') ?>&is_active=<?= e($is_active ?? '') ?>&is_deleted=<?= e($is_deleted ?? '') ?>&sort_by=<?= e($sort_by) ?>&sort_dir=<?= e($sort_dir) ?>" class="btn btn-secondary" style="padding: 6px 12px; font-size: 13px;">
-                    السابق
-                </a>
-            <?php else: ?>
-                <button type="button" class="btn btn-secondary" style="padding: 6px 12px; font-size: 13px; opacity: 0.5; cursor: not-allowed;" disabled>
-                    السابق
-                </button>
-            <?php endif; ?>
+<?php 
+$current_page = $currentPage;
+$total_pages = $totalPages;
+$total_records = $totalItems;
+$per_page = $limit;
 
-            <!-- Page indicators -->
-            <?php for ($p = 1; $p <= $totalPages; $p++): ?>
-                <a href="?page=<?= $p ?>&keyword=<?= e($keyword ?? '') ?>&is_active=<?= e($is_active ?? '') ?>&is_deleted=<?= e($is_deleted ?? '') ?>&sort_by=<?= e($sort_by) ?>&sort_dir=<?= e($sort_dir) ?>" class="btn <?= $currentPage === $p ? 'btn-primary' : 'btn-secondary' ?>" style="padding: 6px 12px; font-size: 13px;">
-                    <?= $p ?>
-                </a>
-            <?php endfor; ?>
+$queryParams = $_GET;
+unset($queryParams['page']);
+$base_url = '?' . http_build_query($queryParams);
 
-            <!-- Next Button -->
-            <?php if ($currentPage < $totalPages): ?>
-                <a href="?page=<?= $currentPage + 1 ?>&keyword=<?= e($keyword ?? '') ?>&is_active=<?= e($is_active ?? '') ?>&is_deleted=<?= e($is_deleted ?? '') ?>&sort_by=<?= e($sort_by) ?>&sort_dir=<?= e($sort_dir) ?>" class="btn btn-secondary" style="padding: 6px 12px; font-size: 13px;">
-                    التالي
-                </a>
-            <?php else: ?>
-                <button type="button" class="btn btn-secondary" style="padding: 6px 12px; font-size: 13px; opacity: 0.5; cursor: not-allowed;" disabled>
-                    التالي
-                </button>
-            <?php endif; ?>
-        </div>
-    </div>
-<?php endif; ?>
+include Config::get('app.paths.root') . '/views/components/pagination.php';
+?>

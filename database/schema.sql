@@ -98,12 +98,17 @@ CREATE TABLE `services` (
 -- ------------------------------------------------------------
 CREATE TABLE `cities` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `key_name` VARCHAR(100) NOT NULL UNIQUE, -- E.g. 'damascus'
-  `slug` VARCHAR(100) NOT NULL UNIQUE, -- E.g. 'damascus'
-  `display_name_ar` VARCHAR(150) NOT NULL, -- E.g. 'دمشق'
-  `governorate_ar` VARCHAR(100) NULL, -- E.g. 'دمشق'
+  `public_id` VARCHAR(36) NOT NULL UNIQUE,
+  `key` VARCHAR(100) NOT NULL UNIQUE,
+  `slug` VARCHAR(100) NOT NULL UNIQUE,
+  `display_name_ar` VARCHAR(150) NOT NULL,
+  `display_name_en` VARCHAR(150) NULL,
+  `governorate_ar` VARCHAR(100) NULL,
   `sort_order` INT NOT NULL DEFAULT 0,
+  `meta_title_ar` VARCHAR(255) NULL,
+  `meta_description_ar` TEXT NULL,
   `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+  `is_deleted` TINYINT(1) NOT NULL DEFAULT 0,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
@@ -116,17 +121,22 @@ CREATE TABLE `cities` (
 -- ------------------------------------------------------------
 CREATE TABLE `areas` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `public_id` VARCHAR(36) NOT NULL UNIQUE,
   `city_id` INT NOT NULL,
-  `key_name` VARCHAR(100) NOT NULL,
-  `slug` VARCHAR(100) NOT NULL UNIQUE,
+  `key` VARCHAR(100) NOT NULL,
+  `slug` VARCHAR(100) NOT NULL,
   `display_name_ar` VARCHAR(150) NOT NULL,
+  `display_name_en` VARCHAR(150) NULL,
   `sort_order` INT NOT NULL DEFAULT 0,
+  `meta_title_ar` VARCHAR(255) NULL,
+  `meta_description_ar` TEXT NULL,
   `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+  `is_deleted` TINYINT(1) NOT NULL DEFAULT 0,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
   FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`) ON DELETE CASCADE,
-  INDEX `idx_area_slug` (`slug`),
+  UNIQUE KEY `uq_area_city_slug` (`city_id`, `slug`),
   INDEX `idx_area_city` (`city_id`),
   INDEX `idx_area_active` (`is_active`, `sort_order`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

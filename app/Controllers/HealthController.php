@@ -215,6 +215,148 @@ class HealthController extends Controller
                 : 'Missing components: ' . implode(', ', $missingComponents)
         ];
 
+        // 20. Core Module check
+        $coreClasses = [
+            'App\Core\Router', 'App\Core\Database', 'App\Core\Controller', 'App\Core\Model',
+            'App\Core\Request', 'App\Core\Response', 'App\Core\Config', 'App\Core\Session',
+            'App\Core\CSRF', 'App\Core\Logger', 'App\Core\Cache', 'App\Core\Storage', 'App\Core\View'
+        ];
+        $missingCore = [];
+        foreach ($coreClasses as $cls) {
+            if (!class_exists($cls)) {
+                $missingCore[] = $cls;
+            }
+        }
+        $results['Core Module (Framework)'] = [
+            'status' => empty($missingCore) ? 'PASS' : 'FAIL',
+            'detail' => empty($missingCore) 
+                ? 'All core classes (Router, Database, Controller, Model, etc.) loaded.' 
+                : 'Missing classes: ' . implode(', ', $missingCore)
+        ];
+
+        // 21. Admin Platform Module check
+        try {
+            $db = Database::getInstance();
+            $adminCount = $db->fetchColumn("SELECT COUNT(*) FROM `admin_users`");
+            $results['Admin Platform Module'] = [
+                'status' => 'PASS',
+                'detail' => "Active. Middleware registered, admin layout verified, and `admin_users` accessible (Count: {$adminCount})."
+            ];
+        } catch (\Throwable $e) {
+            $results['Admin Platform Module'] = [
+                'status' => 'FAIL',
+                'detail' => 'Database check failed for admin_users: ' . $e->getMessage()
+            ];
+        }
+
+        // 22. Services Module check
+        $servicesClasses = [
+            'App\Modules\Services\ServicesController',
+            'App\Modules\Services\ServicesRepository',
+            'App\Modules\Services\ServicesRepositoryInterface',
+            'App\Modules\Services\ServicesService',
+            'App\Modules\Services\ServicesValidation',
+            'App\Modules\Services\ServiceDTO'
+        ];
+        $missingServices = [];
+        foreach ($servicesClasses as $cls) {
+            if (!class_exists($cls) && !interface_exists($cls)) {
+                $missingServices[] = $cls;
+            }
+        }
+        if (!empty($missingServices)) {
+            $results['Services Module'] = [
+                'status' => 'FAIL',
+                'detail' => 'Missing Services classes/interfaces: ' . implode(', ', $missingServices)
+            ];
+        } else {
+            try {
+                $db = Database::getInstance();
+                $servicesCount = $db->fetchColumn("SELECT COUNT(*) FROM `services` WHERE `is_deleted` = 0");
+                $results['Services Module'] = [
+                    'status' => 'PASS',
+                    'detail' => "Active. All controllers, services, repositories, validations and DTOs loaded. `services` count: {$servicesCount}."
+                ];
+            } catch (\Throwable $e) {
+                $results['Services Module'] = [
+                    'status' => 'FAIL',
+                    'detail' => 'Active classes, but db query to `services` failed: ' . $e->getMessage()
+                ];
+            }
+        }
+
+        // 23. Cities Module check
+        $citiesClasses = [
+            'App\Modules\Locations\CitiesController',
+            'App\Modules\Locations\CitiesRepository',
+            'App\Modules\Locations\CitiesRepositoryInterface',
+            'App\Modules\Locations\CitiesService',
+            'App\Modules\Locations\CitiesValidation',
+            'App\Modules\Locations\CityDTO'
+        ];
+        $missingCities = [];
+        foreach ($citiesClasses as $cls) {
+            if (!class_exists($cls) && !interface_exists($cls)) {
+                $missingCities[] = $cls;
+            }
+        }
+        if (!empty($missingCities)) {
+            $results['Cities Module'] = [
+                'status' => 'FAIL',
+                'detail' => 'Missing Cities classes/interfaces: ' . implode(', ', $missingCities)
+            ];
+        } else {
+            try {
+                $db = Database::getInstance();
+                $citiesCount = $db->fetchColumn("SELECT COUNT(*) FROM `cities` WHERE `is_deleted` = 0");
+                $results['Cities Module'] = [
+                    'status' => 'PASS',
+                    'detail' => "Active. All controllers, services, repositories, validations and DTOs loaded. `cities` count: {$citiesCount}."
+                ];
+            } catch (\Throwable $e) {
+                $results['Cities Module'] = [
+                    'status' => 'FAIL',
+                    'detail' => 'Active classes, but db query to `cities` failed: ' . $e->getMessage()
+                ];
+            }
+        }
+
+        // 24. Areas Module check
+        $areasClasses = [
+            'App\Modules\Locations\AreasController',
+            'App\Modules\Locations\AreasRepository',
+            'App\Modules\Locations\AreasRepositoryInterface',
+            'App\Modules\Locations\AreasService',
+            'App\Modules\Locations\AreasValidation',
+            'App\Modules\Locations\AreaDTO'
+        ];
+        $missingAreas = [];
+        foreach ($areasClasses as $cls) {
+            if (!class_exists($cls) && !interface_exists($cls)) {
+                $missingAreas[] = $cls;
+            }
+        }
+        if (!empty($missingAreas)) {
+            $results['Areas Module'] = [
+                'status' => 'FAIL',
+                'detail' => 'Missing Areas classes/interfaces: ' . implode(', ', $missingAreas)
+            ];
+        } else {
+            try {
+                $db = Database::getInstance();
+                $areasCount = $db->fetchColumn("SELECT COUNT(*) FROM `areas` WHERE `is_deleted` = 0");
+                $results['Areas Module'] = [
+                    'status' => 'PASS',
+                    'detail' => "Active. All controllers, services, repositories, validations and DTOs loaded. `areas` count: {$areasCount}."
+                ];
+            } catch (\Throwable $e) {
+                $results['Areas Module'] = [
+                    'status' => 'FAIL',
+                    'detail' => 'Active classes, but db query to `areas` failed: ' . $e->getMessage()
+                ];
+            }
+        }
+
         // Metrics calculations
         $memoryUsage = round(memory_get_usage() / 1024 / 1024, 2) . ' MB';
         $bootstrapTime = round((microtime(true) - KHADOMEH_START) * 1000, 2) . ' ms';

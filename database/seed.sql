@@ -34,34 +34,96 @@ INSERT INTO `services` (`public_id`, `key`, `slug`, `display_name_ar`, `short_na
 -- ------------------------------------------------------------
 -- 4. CITIES
 -- ------------------------------------------------------------
-INSERT INTO `cities` (`key_name`, `slug`, `display_name_ar`, `governorate_ar`, `sort_order`, `is_active`) VALUES
-('damascus', 'damascus', 'دمشق', 'محافظة دمشق', 1, 1),
-('rif-dimashq', 'rif-dimashq', 'ريف دمشق', 'محافظة ريف دمشق', 2, 1),
-('aleppo', 'aleppo', 'حلب', 'محافظة حلب', 3, 1),
-('homs', 'homs', 'حمص', 'محافظة حمص', 4, 1),
-('hama', 'hama', 'حماة', 'محافظة حماة', 5, 1),
-('latakia', 'latakia', 'اللاذقية', 'محافظة اللاذقية', 6, 1),
-('tartus', 'tartus', 'طرطوس', 'محافظة طرطوس', 7, 1);
+INSERT INTO `cities` (`public_id`, `key`, `slug`, `display_name_ar`, `display_name_en`, `governorate_ar`, `sort_order`, `is_active`, `is_deleted`) VALUES
+('660e8400-e29b-41d4-a716-446655440001', 'damascus', 'damascus', 'دمشق', 'Damascus', 'محافظة دمشق', 1, 1, 0),
+('660e8400-e29b-41d4-a716-446655440002', 'rif-dimashq', 'rif-dimashq', 'ريف دمشق', 'Rif Dimashq', 'محافظة ريف دمشق', 2, 1, 0),
+('660e8400-e29b-41d4-a716-446655440003', 'aleppo', 'aleppo', 'حلب', 'Aleppo', 'محافظة حلب', 3, 1, 0),
+('660e8400-e29b-41d4-a716-446655440004', 'homs', 'homs', 'حمص', 'Homs', 'محافظة حمص', 4, 1, 0),
+('660e8400-e29b-41d4-a716-446655440005', 'hama', 'hama', 'حماة', 'Hama', 'محافظة حماة', 5, 1, 0),
+('660e8400-e29b-41d4-a716-446655440006', 'latakia', 'latakia', 'اللاذقية', 'Latakia', 'محافظة اللاذقية', 6, 1, 0),
+('660e8400-e29b-41d4-a716-446655440007', 'tartus', 'tartus', 'طرطوس', 'Tartus', 'محافظة طرطوس', 7, 1, 0),
+('660e8400-e29b-41d4-a716-446655440008', 'idlib', 'idlib', 'إدلب', 'Idlib', 'محافظة إدلب', 8, 1, 0),
+('660e8400-e29b-41d4-a716-446655440009', 'daraa', 'daraa', 'درعا', 'Daraa', 'محافظة درعا', 9, 1, 0),
+('660e8400-e29b-41d4-a716-446655440010', 'sweida', 'sweida', 'السويداء', 'Sweida', 'محافظة السويداء', 10, 1, 0),
+('660e8400-e29b-41d4-a716-446655440011', 'quneitra', 'quneitra', 'القنيطرة', 'Quneitra', 'محافظة القنيطرة', 11, 1, 0),
+('660e8400-e29b-41d4-a716-446655440012', 'deir-ez-zor', 'deir-ez-zor', 'دير الزور', 'Deir ez-Zor', 'محافظة دير الزور', 12, 1, 0),
+('660e8400-e29b-41d4-a716-446655440013', 'raqqa', 'raqqa', 'الرقة', 'Raqqa', 'محافظة الرقة', 13, 1, 0),
+('660e8400-e29b-41d4-a716-446655440014', 'hasakah', 'hasakah', 'الحسكة', 'Hasakah', 'محافظة الحسكة', 14, 1, 0);
 
 -- ------------------------------------------------------------
--- 5. AREAS (Damascus Areas)
+-- 5. AREAS (Syrian Representative Areas)
 -- ------------------------------------------------------------
--- Note: 'damascus' has id = 1 based on insert order, but we can query or specify if needed.
--- We assume city_id = 1 is Damascus, and city_id = 2 is Rif Dimashq.
-INSERT INTO `areas` (`city_id`, `key_name`, `slug`, `display_name_ar`, `sort_order`, `is_active`) VALUES
-(1, 'mezzeh', 'mezzeh', 'المزة', 1, 1),
-(1, 'kafr-souseh', 'kafr-souseh', 'كفرسوسة', 2, 1),
-(1, 'malki', 'malki', 'المالكي', 3, 1),
-(1, 'abu-rummaneh', 'abu-rummaneh', 'أبو رمانة', 4, 1),
-(1, 'mashrou-dummar', 'mashrou-dummar', 'مشروع دمر', 5, 1),
-(1, 'shaalaan', 'shaalaan', 'الشعلان', 6, 1),
-(1, 'muhajireen', 'muhajireen', 'المهاجرين', 7, 1),
-(1, 'barzeh', 'barzeh', 'برزة', 8, 1),
-(1, 'bab-touma', 'bab-touma', 'باب توما', 9, 1),
-(1, 'qassaa', 'qassaa', 'القصاع', 10, 1),
-(2, 'jaramana', 'jaramana', 'جرمانا', 11, 1),
-(2, 'sahnaya', 'sahnaya', 'صحنايا', 12, 1),
-(2, 'qudsaya', 'qudsaya', 'قدسيا', 13, 1);
+INSERT INTO `areas` (`public_id`, `city_id`, `key`, `slug`, `display_name_ar`, `display_name_en`, `sort_order`, `is_active`, `is_deleted`) VALUES
+-- Damascus (city_id = 1)
+('770e8400-e29b-41d4-a716-446655440001', 1, 'mezzeh', 'mezzeh', 'المزة', 'Mezzeh', 1, 1, 0),
+('770e8400-e29b-41d4-a716-446655440002', 1, 'kafr-souseh', 'kafr-souseh', 'كفرسوسة', 'Kafr Souseh', 2, 1, 0),
+('770e8400-e29b-41d4-a716-446655440003', 1, 'malki', 'malki', 'المالكي', 'Malki', 3, 1, 0),
+('770e8400-e29b-41d4-a716-446655440004', 1, 'abu-rummaneh', 'abu-rummaneh', 'أبو رمانة', 'Abu Rummaneh', 4, 1, 0),
+('770e8400-e29b-41d4-a716-446655440005', 1, 'mashrou-dummar', 'mashrou-dummar', 'مشروع دمر', 'Mashrou Dummar', 5, 1, 0),
+('770e8400-e29b-41d4-a716-446655440006', 1, 'shaalaan', 'shaalaan', 'الشعلان', 'Shaalaan', 6, 1, 0),
+('770e8400-e29b-41d4-a716-446655440007', 1, 'muhajireen', 'muhajireen', 'المهاجرين', 'Muhajireen', 7, 1, 0),
+('770e8400-e29b-41d4-a716-446655440008', 1, 'barzeh', 'barzeh', 'برزة', 'Barzeh', 8, 1, 0),
+('770e8400-e29b-41d4-a716-446655440009', 1, 'bab-touma', 'bab-touma', 'باب توما', 'Bab Touma', 9, 1, 0),
+('770e8400-e29b-41d4-a716-446655440010', 1, 'qassaa', 'qassaa', 'القصاع', 'Qassaa', 10, 1, 0),
+
+-- Rif Dimashq (city_id = 2)
+('770e8400-e29b-41d4-a716-446655440011', 2, 'jaramana', 'jaramana', 'جرمانا', 'Jaramana', 1, 1, 0),
+('770e8400-e29b-41d4-a716-446655440012', 2, 'sahnaya', 'sahnaya', 'صحنايا', 'Sahnaya', 2, 1, 0),
+('770e8400-e29b-41d4-a716-446655440013', 2, 'qudsaya', 'qudsaya', 'قدسيا', 'Qudsaya', 3, 1, 0),
+
+-- Aleppo (city_id = 3)
+('770e8400-e29b-41d4-a716-446655440014', 3, 'al-jamiliyah', 'al-jamiliyah', 'الجميلية', 'Al-Jamiliyah', 1, 1, 0),
+('770e8400-e29b-41d4-a716-446655440015', 3, 'al-shahbaa', 'al-shahbaa', 'الشهباء', 'Al-Shahbaa', 2, 1, 0),
+('770e8400-e29b-41d4-a716-446655440016', 3, 'al-sabeel', 'al-sabeel', 'السبيل', 'Al-Sabeel', 3, 1, 0),
+('770e8400-e29b-41d4-a716-446655440017', 3, 'mogambo', 'mogambo', 'موغامبو', 'Mogambo', 4, 1, 0),
+
+-- Homs (city_id = 4)
+('770e8400-e29b-41d4-a716-446655440018', 4, 'al-inshaat', 'al-inshaat', 'الإنشاءات', 'Al-Inshaat', 1, 1, 0),
+('770e8400-e29b-41d4-a716-446655440019', 4, 'al-hamra', 'al-hamra', 'الحمراء', 'Al-Hamra', 2, 1, 0),
+('770e8400-e29b-41d4-a716-446655440020', 4, 'al-ghouta', 'al-ghouta', 'الغوطة', 'Al-Ghouta', 3, 1, 0),
+
+-- Hama (city_id = 5)
+('770e8400-e29b-41d4-a716-446655440021', 5, 'al-sharia', 'al-sharia', 'الشريعة', 'Al-Sharia', 1, 1, 0),
+('770e8400-e29b-41d4-a716-446655440022', 5, 'al-hadher', 'al-hadher', 'الحاضر', 'Al-Hadher', 2, 1, 0),
+('770e8400-e29b-41d4-a716-446655440023', 5, 'bab-qabli', 'bab-qabli', 'باب قبلي', 'Bab-Qabli', 3, 1, 0),
+
+-- Latakia (city_id = 6)
+('770e8400-e29b-41d4-a716-446655440024', 6, 'mashrou-al-ziraa', 'mashrou-al-ziraa', 'مشروع الزراعة', 'Mashrou Al-Ziraa', 1, 1, 0),
+('770e8400-e29b-41d4-a716-446655440025', 6, 'al-awqaf', 'al-awqaf', 'الأوقاف', 'Al-Awqaf', 2, 1, 0),
+('770e8400-e29b-41d4-a716-446655440026', 6, 'al-american', 'al-american', 'الأمريكان', 'Al-American', 3, 1, 0),
+
+-- Tartus (city_id = 7)
+('770e8400-e29b-41d4-a716-446655440027', 7, 'al-inshaat-tartus', 'al-inshaat-tartus', 'الإنشاءات طرطوس', 'Al-Inshaat', 1, 1, 0),
+('770e8400-e29b-41d4-a716-446655440028', 7, 'al-ghamqa', 'al-ghamqa', 'الغمقة', 'Al-Ghamqa', 2, 1, 0),
+('770e8400-e29b-41d4-a716-446655440029', 7, 'al-rabia', 'al-rabia', 'الربوة', 'Al-Rabia', 3, 1, 0),
+
+-- Idlib (city_id = 8)
+('770e8400-e29b-41d4-a716-446655440030', 8, 'al-thawra', 'al-thawra', 'الثورة', 'Al-Thawra', 1, 1, 0),
+('770e8400-e29b-41d4-a716-446655440031', 8, 'al-dabeet', 'al-dabeet', 'الضبيط', 'Al-Dabeet', 2, 1, 0),
+
+-- Daraa (city_id = 9)
+('770e8400-e29b-41d4-a716-446655440032', 9, 'daraa-al-balad', 'daraa-al-balad', 'درعا البلد', 'Daraa Al-Balad', 1, 1, 0),
+('770e8400-e29b-41d4-a716-446655440033', 9, 'daraa-al-mahatta', 'daraa-al-mahatta', 'درعا المحطة', 'Daraa Al-Mahatta', 2, 1, 0),
+
+-- Sweida (city_id = 10)
+('770e8400-e29b-41d4-a716-446655440034', 10, 'al-thawra-sweida', 'al-thawra-sweida', 'الثورة السويداء', 'Al-Thawra', 1, 1, 0),
+('770e8400-e29b-41d4-a716-446655440035', 10, 'al-madinah', 'al-madinah', 'وسط المدينة', 'Al-Madinah', 2, 1, 0),
+
+-- Quneitra (city_id = 11)
+('770e8400-e29b-41d4-a716-446655440036', 11, 'al-baath', 'al-baath', 'مدينة البعث', 'Al-Baath', 1, 1, 0),
+('770e8400-e29b-41d4-a716-446655440037', 11, 'khan-arnabah', 'khan-arnabah', 'خان أرنبة', 'Khan-Arnabah', 2, 1, 0),
+
+-- Deir ez-Zor (city_id = 12)
+('770e8400-e29b-41d4-a716-446655440038', 12, 'al-qusour', 'al-qusour', 'القصور', 'Al-Qusour', 1, 1, 0),
+('770e8400-e29b-41d4-a716-446655440039', 12, 'al-joura', 'al-joura', 'الجورة', 'Al-Joura', 2, 1, 0),
+
+-- Raqqa (city_id = 13)
+('770e8400-e29b-41d4-a716-446655440040', 13, 'al-thawra-raqqa', 'al-thawra-raqqa', 'الثورة الرقة', 'Al-Thawra', 1, 1, 0),
+('770e8400-e29b-41d4-a716-446655440041', 13, 'al-daraiya', 'al-daraiya', 'الدرعية', 'Al-Daraiya', 2, 1, 0),
+
+-- Hasakah (city_id = 14)
+('770e8400-e29b-41d4-a716-446655440042', 14, 'al-kallaseh', 'al-kallaseh', 'الكلاسة', 'Al-Kallaseh', 1, 1, 0),
+('770e8400-e29b-41d4-a716-446655440043', 14, 'al-aziziyah', 'al-aziziyah', 'العزيزية', 'Al-Aziziyah', 2, 1, 0);
 
 -- ------------------------------------------------------------
 -- 6. TRUST BADGES

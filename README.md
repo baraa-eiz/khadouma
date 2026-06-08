@@ -43,21 +43,36 @@ This repository implements a bespoke **Native PHP Micro-MVC Framework** engineer
 │   ├── Middleware/                   # Request Interceptors
 │   │   └── AdminAuth.php             # Route access guard ensuring active admin session
 │   ├── Modules/                      # Business Modules
-│   │   └── Services/                 # Services Module (Golden CRUD Reference)
-│   │       ├── Routes.php            # Services routes registration
-│   │       ├── ServicesController.php# Handles request parsing & redirect logic
-│   │       ├── ServicesService.php   # Business rules, audit logs & transactions
-│   │       ├── ServicesRepositoryInterface.php # Data access contract
-│   │       ├── ServicesRepository.php# Dynamic sql building & PDO binding
-│   │       ├── ServiceData.php       # Sanitized DTO model
-│   │       ├── ServicesValidation.php# Trim, character check & Arabic normalization
-│   │       └── Views/                # Front-end templates (list, show, create, edit)
+│   │   ├── Services/                 # Services Module (Golden CRUD Reference)
+│   │   │   ├── Routes.php            # Services routes registration
+│   │   │   ├── ServicesController.php# Handles request parsing & redirect logic
+│   │   │   ├── ServicesService.php   # Business rules, audit logs & transactions
+│   │   │   ├── ServicesRepositoryInterface.php # Data access contract
+│   │   │   ├── ServicesRepository.php# Dynamic sql building & PDO binding
+│   │   │   ├── ServiceDTO.php        # Sanitized DTO model
+│   │   │   ├── ServicesValidation.php# Trim, character check & Arabic normalization
+│   │   │   └── Views/                # Front-end templates (list, show, create, edit)
+│   │   └── Locations/                # Locations Module (Cities & Areas CRUD)
+│   │       ├── Routes.php            # Locations routes registration
+│   │       ├── CitiesController.php  # Handles request parsing & redirect logic for Cities
+│   │       ├── AreasController.php   # Handles request parsing & redirect logic for Areas
+│   │       ├── CitiesService.php     # Business rules, audit logs & transactions for Cities
+│   │       ├── AreasService.php      # Business rules, audit logs & transactions for Areas
+│   │       ├── CitiesRepositoryInterface.php # Cities data access contract
+│   │       ├── AreasRepositoryInterface.php # Areas data access contract
+│   │       ├── CitiesRepository.php  # Dynamic sql building & PDO binding for Cities
+│   │       ├── AreasRepository.php   # Dynamic sql building & PDO binding for Areas
+│   │       ├── CityDTO.php           # Sanitized DTO model for Cities
+│   │       ├── AreaDTO.php           # Sanitized DTO model for Areas
+│   │       ├── CitiesValidation.php  # Trim, character check & Arabic normalization for Cities
+│   │       ├── AreasValidation.php   # Trim, character check & Arabic normalization for Areas
+│   │       └── Views/                # Front-end templates for Cities and Areas
 │   └── Repositories/                 # Database repositories wrapper (legacy compatibility)
 ├── config/                           # System Configurations (app.php, database.php, navigation.php)
 ├── database/                         # Database Migration & Seeds
 │   ├── migrations/                   # Sequential schema updates
 │   ├── schema.sql                    # Production tables schema
-│   └── seed.sql                      # Demo seed data (Admin credentials, services)
+│   └── seed.sql                      # Demo seed data (Admin credentials, services, cities, areas)
 ├── docs/                             # In-depth Technical Documentation
 ├── public/                           # Web-Accessible Document Root
 │   ├── assets/                       # Static UI Assets
@@ -67,7 +82,8 @@ This repository implements a bespoke **Native PHP Micro-MVC Framework** engineer
 │   └── index.php                     # Front Controller Entry Point
 ├── storage/                          # Non-accessible file storage (logs, cache, sessions)
 ├── test_smoke.php                    # Framework component verification script
-└── test_services_crud.php            # Automated Integration test suite
+├── test_services_crud.php            # Automated Services CRUD Integration test suite
+└── test_locations_crud.php           # Automated Locations CRUD Integration test suite
 ```
 
 ---
@@ -119,7 +135,20 @@ Access the Administration dashboard via: `http://localhost:8000/admin/login`
 
 ## 🧪 Automated Testing Suite
 
-To ensure framework stability and prevent regression, the project includes two automated test suites:
+To ensure framework stability and prevent regression, the project includes three automated test suites:
+
+1.  **Smoke Tests** (Verifies core class loading, database transactions, cache, file storage, and session lifecycles):
+    ```bash
+    php test_smoke.php
+    ```
+2.  **Services CRUD Integration Tests** (Validates the validation pipeline, DTO integrity, transactional service layers, soft-deletion, restoration, and audit logging for Services):
+    ```bash
+    php test_services_crud.php
+    ```
+3.  **Locations CRUD Integration Tests** (Validates the validation pipeline, city-scoped area slug uniqueness, DTO integrity, transactional service layers, soft-deletion, restoration, and audit logging for Cities and Areas):
+    ```bash
+    php test_locations_crud.php
+    ```ion, the project includes two automated test suites:
 
 1.  **Smoke Tests** (Verifies core class loading, database transactions, cache, file storage, and session lifecycles):
     ```bash
