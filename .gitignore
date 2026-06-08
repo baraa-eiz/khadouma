@@ -31,3 +31,9 @@ vendor/
 qa_dump.sql
 *.sql.gz
 insert_carpentry.sql
+
+# Scratch files and screenshots
+*_screenshot_*.png
+acceptance_review_report*
+implementation_plan*
+walkthrough*

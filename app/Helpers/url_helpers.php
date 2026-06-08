@@ -10,6 +10,9 @@ if (!function_exists('url')) {
     function url(string $path = ''): string
     {
         $base = rtrim(Config::get('app.url', ''), '/');
+        if (strpos($path, 'public/') === 0) {
+            $path = substr($path, 7);
+        }
         return $base . '/' . ltrim($path, '/');
     }
 }
@@ -51,3 +54,34 @@ if (!function_exists('redirectBack')) {
         }
     }
 }
+
+if (!function_exists('base_url')) {
+    /**
+     * Generate an absolute URL pointing to a path.
+     */
+    function base_url(string $path = ''): string
+    {
+        return url($path);
+    }
+}
+
+if (!function_exists('asset_url')) {
+    /**
+     * Generate an absolute URL pointing to a public asset.
+     */
+    function asset_url(string $path = ''): string
+    {
+        return asset($path);
+    }
+}
+
+if (!function_exists('admin_url')) {
+    /**
+     * Generate an absolute URL pointing to an admin file.
+     */
+    function admin_url(string $path = ''): string
+    {
+        return url('admin/' . ltrim($path, '/'));
+    }
+}
+

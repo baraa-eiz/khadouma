@@ -27,8 +27,14 @@ if (!function_exists('get_provider_image')) {
     function get_provider_image(?string $path, int $width = 150, int $height = 150, string $text = 'صورة الحرفي'): string
     {
         $rootDir = dirname(dirname(__DIR__));
-        if (!empty($path) && file_exists($rootDir . '/public/' . ltrim($path, '/'))) {
-            return url($path);
+        if (!empty($path)) {
+            $cleanPath = $path;
+            if (strpos($cleanPath, 'public/') === 0) {
+                $cleanPath = substr($cleanPath, 7);
+            }
+            if (file_exists($rootDir . '/public/' . ltrim($cleanPath, '/'))) {
+                return url($cleanPath);
+            }
         }
         return get_placeholder_svg($width, $height, $text);
     }

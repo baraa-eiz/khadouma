@@ -17,11 +17,19 @@ class Bootstrap
             return;
         }
 
+        if (!defined('IN_APP')) {
+            define('IN_APP', true);
+        }
+
+        $rootDir = dirname(dirname(__DIR__));
+        if (!defined('APP_DIR')) {
+            define('APP_DIR', $rootDir);
+        }
+
         // 1. Setup PSR-4 Autoloading
         self::registerAutoloader();
 
         // 2. Load Environment Variables
-        $rootDir = dirname(dirname(__DIR__));
         Env::load($rootDir . '/.env');
 
         // 3. Setup Config Path

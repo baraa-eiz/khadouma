@@ -38,7 +38,7 @@ return [
         'key' => 'providers',
         'label' => 'مزودو الخدمات',
         'icon' => 'users',
-        'url' => '#',
+        'url' => '/admin/providers',
         'active_pattern' => '/admin/providers*'
     ],
     [

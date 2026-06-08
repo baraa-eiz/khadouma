@@ -16,6 +16,19 @@ if (!function_exists('seo_title')) {
     }
 }
 
+if (!function_exists('seo_meta_description')) {
+    /**
+     * Generate HTML meta description tag.
+     */
+    function seo_meta_description(string $description = ''): string
+    {
+        $defaultDesc = 'ابحث عن أفضل الحرفيين وسجل ورش الكهرباء، السباكة، والخدمات المنزلية في سوريا. تواصل مباشر بدون عمولات.';
+        $cleanDesc = empty($description) ? $defaultDesc : mb_substr(strip_tags($description), 0, 160, 'UTF-8');
+        return '<meta name="description" content="' . e($cleanDesc) . '">';
+    }
+}
+
+
 if (!function_exists('seo_tags')) {
     /**
      * Compile complete HTML meta headers, canonicals, and OpenGraph parameters.

@@ -25,6 +25,12 @@ $services = $serviceRepo->getAllActive();
 $cities = $cityRepo->getAllActive();
 $latestProviders = $providerRepo->getLatestApproved(6);
 
+// Fetch profile images for latest providers
+foreach ($latestProviders as &$p) {
+    $p['profile_image'] = $providerRepo->getProviderProfileImage($p['id']);
+}
+unset($p);
+
 $pageTitle = 'الصفحة الرئيسية | دليل الحرفيين والخدمات المنزلية بدمشق وسوريا';
 $metaDesc = 'دليل منصة خدومة يربطك بأفضل الفنيين والعمال للخدمات المنزلية والصيانة في سوريا مباشرة بدون عمولات. تنظيف، سباكة، كهرباء، دهان، ونقل أثاث.';
 
@@ -38,6 +44,11 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
     exit;
 }
 ?>
+
+<!-- Inject structured data (JSON-LD) for Homepage -->
+<?= json_ld_breadcrumbs([
+    'الرئيسية' => base_url()
+]) ?>
 
 <!-- Hero Welcoming Section -->
 <section class="hero-section">
@@ -70,12 +81,17 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
     </div>
 </section>
 
+<!-- Error Banner for AJAX contact calls -->
+<div class="container" style="margin-top: 20px;">
+    <div id="contact-error-banner" class="alert alert-danger" style="display: none; margin-bottom: 20px;"></div>
+</div>
+
 <!-- Services Grid List -->
 <section class="services-section container" style="margin-top: 60px;">
     <h2 class="section-title">تصفح الخدمات المتوفرة</h2>
     <div class="grid grid-5" style="margin-top: 30px;">
         <?php foreach ($services as $srv): ?>
-            <a href="<?= base_url('services/' . $srv['slug']) ?>" class="card service-card">
+            <a href="<?= base_url('search?service=' . $srv['slug']) ?>" class="card service-card">
                 <div class="service-icon">
                     <?php
                     $icon = '🛠️';
@@ -101,51 +117,124 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
             <p class="text-center" style="grid-column: 1 / -1; color: var(--text-secondary); padding: 40px 0;">لا يوجد مزودو خدمات معتمدون حالياً.</p>
         <?php else: ?>
             <?php foreach ($latestProviders as $p): ?>
-                <div class="card provider-card">
-                    <div class="provider-header">
-                        <div class="provider-img-wrapper">
-                            <!-- Fallback to base64 SVG dynamically -->
-                            <img src="<?= get_provider_image('', 150, 150, mb_substr($p['display_name_ar'], 0, 8)) ?>" alt="<?= e($p['display_name_ar']) ?>">
+                <div class="card provider-card" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+                    <div>
+                        <div class="provider-header" style="display: flex; gap: 15px; margin-bottom: 15px;">
+                            <div class="provider-img-wrapper" style="width: 60px; height: 60px; border-radius: 50%; overflow: hidden; border: 2px solid var(--border-color); flex-shrink: 0;">
+                                <?php if (!empty($p['profile_image'])): ?>
+                                    <img src="<?= base_url($p['profile_image']) ?>" alt="صورة <?= e($p['display_name_ar']) ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                                <?php else: ?>
+                                    <div style="background-color:var(--bg-secondary); color:var(--text-secondary); display:flex; align-items:center; justify-content:center; width:100%; height:100%; font-size:1.8rem; line-height: 60px; text-align: center;">👨‍🔧</div>
+                                <?php endif; ?>
+                            </div>
+                            <div class="provider-info-header" style="display: flex; flex-direction: column; justify-content: center;">
+                                <h3 class="provider-name" style="font-size: 1.1rem; font-weight: 700; margin: 0;">
+                                    <a href="<?= base_url('provider/' . $p['slug']) ?>" style="color: var(--text-primary);"><?= e($p['display_name_ar']) ?></a>
+                                </h3>
+                                <span class="provider-service-tag" style="font-size: 0.8rem; font-weight: 700; color: var(--accent-primary); background-color: #fdf2ee; padding: 2px 8px; border-radius: 4px; align-self: flex-start; margin-top: 4px;">
+                                    <?= e($p['service_name']) ?>
+                                </span>
+                            </div>
                         </div>
-                        <div class="provider-info-header">
-                            <h3 class="provider-name"><?= e($p['display_name_ar']) ?></h3>
-                            <span class="provider-service-tag"><?= e($p['service_name']) ?></span>
+                        
+                        <div class="provider-badges" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;">
+                            <?php if ($p['verified']): ?>
+                                <span class="badge-tag badge-verified" style="font-size: 0.75rem; background-color: #eef7f0; color: var(--success-color); border: 1px solid #d9eedf; padding: 2px 8px; border-radius: 12px; font-weight: 600;">موثق</span>
+                            <?php endif; ?>
+                            <?php if ($p['years_experience'] > 0): ?>
+                                <span class="badge-tag badge-exp" style="font-size: 0.75rem; background-color: #fcf6e8; color: #a8761e; border: 1px solid #f6eacf; padding: 2px 8px; border-radius: 12px; font-weight: 600;">خبرة <?= (int)$p['years_experience'] ?> سنة</span>
+                            <?php endif; ?>
                         </div>
+                        
+                        <p class="provider-desc-text" style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; height: 2.6rem;">
+                            <?= e($p['short_description_ar']) ?>
+                        </p>
                     </div>
                     
-                    <div class="provider-badges">
-                        <?php if ($p['verified']): ?>
-                            <span class="badge-tag badge-verified">✓ موثق</span>
-                        <?php endif; ?>
-                        <?php if ($p['phone_verified']): ?>
-                            <span class="badge-tag badge-verified">✓ هاتف موثق</span>
-                        <?php endif; ?>
-                        <?php if ($p['years_experience'] > 0): ?>
-                            <span class="badge-tag badge-exp">★ <?= e($p['years_experience']) ?> سنة خبرة</span>
-                        <?php endif; ?>
-                    </div>
-                    
-                    <p class="provider-desc-text"><?= e($p['short_description_ar']) ?></p>
-                    
-                    <div class="provider-meta">
-                        <span class="provider-location">📍 دمشق، <?= e($p['city_name']) ?></span>
-                        <div class="provider-rating">
-                            <span class="star-icon">★</span>
-                            <span style="font-family: var(--font-latin);"><?= number_format($p['rating'], 1) ?></span>
-                            <span style="font-size: 0.8rem; color: var(--text-secondary);"> (<?= e($p['reviews_count']) ?> تقييم)</span>
+                    <div>
+                        <div class="provider-meta" style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 10px; margin-bottom: 15px; font-size: 0.85rem; color: var(--text-secondary);">
+                            <span class="provider-location">📍 <?= e($p['city_name']) ?></span>
+                            <div class="provider-rating" style="display: flex; align-items: center; gap: 4px; font-weight: bold; color: var(--text-primary);">
+                                ⭐ <?= number_format($p['rating'], 1) ?> (<?= (int)$p['reviews_count'] ?>)
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="provider-actions">
-                        <a href="tel:<?= e($p['phone']) ?>" class="btn btn-secondary btn-sm">📞 اتصل الآن</a>
-                        <?php if (!empty($p['whatsapp'])): ?>
-                            <a href="https://wa.me/<?= preg_replace('/\D/', '', $p['whatsapp']) ?>" target="_blank" class="btn btn-whatsapp btn-sm">💬 راسل واتساب</a>
-                        <?php else: ?>
-                            <button class="btn btn-outline btn-sm" disabled style="opacity: 0.5;">لا يوجد واتساب</button>
-                        <?php endif; ?>
+                        
+                        <div class="provider-actions" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <button class="btn btn-primary contact-btn" data-provider-id="<?= (int)$p['id'] ?>" data-method="phone_call" style="font-size: 0.85rem; padding: 8px 12px;">
+                                📞 اتصل الآن
+                            </button>
+                            <button class="btn btn-whatsapp contact-btn" data-provider-id="<?= (int)$p['id'] ?>" data-method="whatsapp_message" style="font-size: 0.85rem; padding: 8px 12px;">
+                                💬 واتساب
+                            </button>
+                        </div>
                     </div>
                 </div>
             <?php endforeach; ?>
         <?php endif; ?>
     </div>
 </section>
+
+<!-- AJAX click tracking script for homepage -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const contactButtons = document.querySelectorAll('.contact-btn');
+    const errorBanner = document.getElementById('contact-error-banner');
+
+    contactButtons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const providerId = btn.getAttribute('data-provider-id');
+            const method = btn.getAttribute('data-method');
+            
+            if (btn.classList.contains('loading')) return;
+
+            btn.classList.add('loading');
+            errorBanner.style.display = 'none';
+
+            fetch('<?= base_url("api/contact") ?>', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    provider_id: providerId,
+                    method: method,
+                    source_page: 'homepage'
+                })
+            })
+            .then(response => {
+                if (response.status === 429) {
+                    throw new Error('لقد تجاوزت الحد الأقصى اليومي المسموح به للاتصال بمزودي الخدمات (5 مزودين).');
+                }
+                if (!response.ok) {
+                    throw new Error('عذراً، فشل الاتصال بالخادم. يرجى المحاولة لاحقاً.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                btn.classList.remove('loading');
+                if (data.success) {
+                    if (method === 'phone_call') {
+                        btn.innerHTML = '📞 ' + data.phone;
+                        window.location.href = data.tel;
+                    } else if (method === 'whatsapp_message') {
+                        window.open(data.whatsapp, '_blank');
+                    }
+                } else {
+                    errorBanner.textContent = data.message || 'حدث خطأ ما.';
+                    errorBanner.style.display = 'block';
+                    window.scrollTo({ top: errorBanner.offsetTop - 100, behavior: 'smooth' });
+                }
+            })
+            .catch(err => {
+                btn.classList.remove('loading');
+                errorBanner.textContent = err.message || 'فشل الاتصال بالخادم. يرجى التأكد من اتصال الإنترنت.';
+                errorBanner.style.display = 'block';
+                window.scrollTo({ top: errorBanner.offsetTop - 100, behavior: 'smooth' });
+            });
+        });
+    });
+});
+</script>
+

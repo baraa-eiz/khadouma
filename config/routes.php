@@ -13,67 +13,57 @@
 // Health Diagnostic Page (Only available in development mode)
 $router->get('/health', [App\Controllers\HealthController::class, 'index']);
 
-// Platform Base Entry Point
+// Platform Base Entry Point (Home Page)
 $router->get('/', function() {
-    return '<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة خدومة - البنية التحتية</title>
-    <style>
-        @import url(\'https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap\');
-        body {
-            font-family: \'Cairo\', Tahoma, sans-serif;
-            background-color: #faf8f5;
-            color: #4a3e3d;
-            text-align: center;
-            padding: 100px 20px;
-            margin: 0;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            border: 1px solid #e6dfd5;
-            border-radius: 16px;
-            padding: 40px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-        }
-        h1 {
-            color: #c05c46;
-            font-size: 28px;
-            margin-bottom: 15px;
-        }
-        p {
-            font-size: 16px;
-            line-height: 1.6;
-            color: #6e615e;
-        }
-        a {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 25px;
-            background-color: #c05c46;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: bold;
-        }
-        a:hover {
-            background-color: #a64c37;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>منصة خدومة (خدومة)</h1>
-        <p>تم إعداد وتشغيل إطار العمل المصغر (Micro-MVC) بنجاح. البنية التحتية الأساسية جاهزة للتطوير.</p>
-        <a href="/health">زيارة صفحة التشخيص /health</a>
-    </div>
-</body>
-</html>';
+    if (!defined('IN_APP')) {
+        define('IN_APP', true);
+    }
+    $isLayoutCalled = true;
+    $viewPath = APP_DIR . '/pages/home.php';
+    ob_start();
+    require APP_DIR . '/includes/layout.php';
+    return ob_get_clean();
 });
+
+// Static Public Pages
+$router->get('/about-us', function() {
+    if (!defined('IN_APP')) {
+        define('IN_APP', true);
+    }
+    $isLayoutCalled = true;
+    $viewPath = APP_DIR . '/pages/about-us.php';
+    ob_start();
+    require APP_DIR . '/includes/layout.php';
+    return ob_get_clean();
+});
+
+$router->get('/terms', function() {
+    if (!defined('IN_APP')) {
+        define('IN_APP', true);
+    }
+    $isLayoutCalled = true;
+    $viewPath = APP_DIR . '/pages/terms.php';
+    ob_start();
+    require APP_DIR . '/includes/layout.php';
+    return ob_get_clean();
+});
+
+$router->get('/privacy', function() {
+    if (!defined('IN_APP')) {
+        define('IN_APP', true);
+    }
+    $isLayoutCalled = true;
+    $viewPath = APP_DIR . '/pages/privacy.php';
+    ob_start();
+    require APP_DIR . '/includes/layout.php';
+    return ob_get_clean();
+});
+
+// Provider Search, Discovery & Event Tracking
+$router->get('/search', [App\Controllers\ProviderController::class, 'search']);
+$router->get('/provider/{slug}', [App\Controllers\ProviderController::class, 'show']);
+$router->post('/api/contact', [App\Controllers\ProviderController::class, 'trackContact']);
+
 
 // Admin Panel Routes
 $router->get('/admin/login', [App\Controllers\Admin\AuthController::class, 'showLogin'], [App\Middleware\AdminGuest::class]);
@@ -86,5 +76,9 @@ require dirname(__DIR__) . '/app/Modules/Services/Routes.php';
 
 // Locations CRUD Module
 require dirname(__DIR__) . '/app/Modules/Locations/Routes.php';
+
+// Providers CRUD Module
+require dirname(__DIR__) . '/app/Modules/Providers/Routes.php';
+
 
 
