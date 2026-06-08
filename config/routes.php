@@ -84,3 +84,7 @@ $router->get('/admin/dashboard', [App\Controllers\Admin\DashboardController::cla
 // Services CRUD Module
 require dirname(__DIR__) . '/app/Modules/Services/Routes.php';
 
+// Locations CRUD Module
+require dirname(__DIR__) . '/app/Modules/Locations/Routes.php';
+
+

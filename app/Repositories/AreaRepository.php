@@ -1,36 +1,35 @@
 <?php
 /**
  * AreaRepository.php
- * Khadomeh Area Data Repository
+ * Khadomeh Area Data Repository (Legacy Wrapper)
  */
 
 namespace App\Repositories;
 
-use App\Core\Database;
+use App\Modules\Locations\AreasRepository;
 
 class AreaRepository {
-    private $db;
+    private $newRepo;
 
     public function __construct() {
-        $this->db = Database::getInstance();
+        $this->newRepo = new AreasRepository();
     }
 
     /**
      * Count all active areas.
      */
     public function count() {
-        return (int) $this->db->fetchColumn(
-            "SELECT COUNT(*) FROM `areas` WHERE `is_active` = 1 AND `deleted_at` IS NULL"
-        );
+        return $this->newRepo->countSearch(['is_active' => 1, 'is_deleted' => 0]);
     }
 
     /**
      * Get all active areas in a specific city.
      */
     public function getByCityId($cityId) {
-        return $this->db->fetchAll(
-            "SELECT * FROM `areas` WHERE `city_id` = ? AND `is_active` = 1 AND `deleted_at` IS NULL ORDER BY `sort_order` ASC",
-            [$cityId]
-        );
+        return $this->newRepo->search([
+            'city_id' => $cityId,
+            'is_active' => 1,
+            'is_deleted' => 0
+        ], 'sort_order', 'ASC', 100);
     }
 }
