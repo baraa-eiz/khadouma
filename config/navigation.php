@@ -24,14 +24,14 @@ return [
         'key' => 'cities',
         'label' => 'المدن',
         'icon' => 'globe',
-        'url' => '#',
+        'url' => '/admin/cities',
         'active_pattern' => '/admin/cities*'
     ],
     [
         'key' => 'areas',
         'label' => 'المناطق',
         'icon' => 'map-pin',
-        'url' => '#',
+        'url' => '/admin/areas',
         'active_pattern' => '/admin/areas*'
     ],
     [
