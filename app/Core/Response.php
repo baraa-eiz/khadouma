@@ -1,37 +1,87 @@
 <?php
-/**
- * Response.php
- * Khadomeh Core Response Helper
- * 
- * Manages HTTP response headers, redirects, status codes, and JSON outputs.
- */
 
 namespace App\Core;
 
-class Response {
+class Response
+{
+    private int $statusCode = 200;
+    private array $headers = [];
+    private string $content = '';
+
     /**
-     * Set the HTTP response status code.
+     * Set the HTTP status code.
      */
-    public static function setStatusCode($code) {
-        http_response_code($code);
+    public function setStatusCode(int $code): self
+    {
+        $this->statusCode = $code;
+        return $this;
     }
 
     /**
-     * Redirect to another URL with optional status code (default: 302).
+     * Set a header value.
      */
-    public static function redirect($url, $code = 302) {
-        self::setStatusCode($code);
-        header("Location: " . $url);
-        exit;
+    public function setHeader(string $name, string $value): self
+    {
+        $this->headers[$name] = $value;
+        return $this;
     }
 
     /**
-     * Return a JSON response with proper headers and Unicode support.
+     * Set response HTML or text content.
      */
-    public static function json($data, $code = 200) {
-        self::setStatusCode($code);
-        header('Content-Type: application/json; charset=utf-8');
-        echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    public function setContent(string $content): self
+    {
+        $this->content = $content;
+        return $this;
+    }
+
+    /**
+     * Send headers and body output.
+     */
+    public function send(): void
+    {
+        if (!headers_sent()) {
+            http_response_code($this->statusCode);
+
+            foreach ($this->headers as $name => $value) {
+                header("{$name}: {$value}");
+            }
+        }
+
+        echo $this->content;
+    }
+
+    /**
+     * Create a JSON response.
+     */
+    public static function json(array $data, int $statusCode = 200): self
+    {
+        $response = new self();
+        $response->setStatusCode($statusCode);
+        $response->setHeader('Content-Type', 'application/json; charset=utf-8');
+        $response->setContent(json_encode($data, JSON_UNESCAPED_UNICODE));
+        return $response;
+    }
+
+    /**
+     * Create a redirect response.
+     */
+    public static function redirect(string $url, int $statusCode = 302): void
+    {
+        // If it's a relative path, prepends application URL base
+        if (strpos($url, 'http://') !== 0 && strpos($url, 'https://') !== 0) {
+            $base = rtrim(Config::get('app.url', ''), '/');
+            $url = $base . '/' . ltrim($url, '/');
+        }
+
+        if (!headers_sent()) {
+            http_response_code($statusCode);
+            header("Location: {$url}");
+            exit;
+        }
+
+        // JS fallback in case headers were sent
+        echo "<script>window.location.href='{$url}';</script>";
         exit;
     }
 }

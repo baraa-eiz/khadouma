@@ -79,11 +79,11 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
                 <div class="service-icon">
                     <?php
                     $icon = '🛠️';
-                    if ($srv['key_name'] === 'cleaning') $icon = '🧹';
-                    if ($srv['key_name'] === 'plumbing') $icon = '🚰';
-                    if ($srv['key_name'] === 'electricity') $icon = '⚡';
-                    if ($srv['key_name'] === 'painting') $icon = '🎨';
-                    if ($srv['key_name'] === 'moving') $icon = '📦';
+                    if ($srv['key'] === 'cleaning') $icon = '🧹';
+                    if ($srv['key'] === 'plumbing') $icon = '🚰';
+                    if ($srv['key'] === 'electricity') $icon = '⚡';
+                    if ($srv['key'] === 'painting') $icon = '🎨';
+                    if ($srv['key'] === 'moving') $icon = '📦';
                     echo $icon;
                     ?>
                 </div>

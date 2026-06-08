@@ -1,0 +1,33 @@
+# Environment configuration
+.env
+.env.production
+.env.local
+
+# Logs and storage
+storage/logs/*.log
+storage/cache/*
+storage/sessions/*
+storage/temp/*
+
+# OS specific files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# IDE & Editor configurations
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Dependency manager directories
+vendor/
+
+# Test output and database dumps
+qa_dump.sql
+*.sql.gz
+insert_carpentry.sql

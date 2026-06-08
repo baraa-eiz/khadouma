@@ -74,14 +74,18 @@ CREATE TABLE `settings` (
 -- ------------------------------------------------------------
 CREATE TABLE `services` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `key_name` VARCHAR(100) NOT NULL UNIQUE, -- E.g. 'cleaning'
-  `slug` VARCHAR(100) NOT NULL UNIQUE, -- E.g. 'cleaning'
-  `display_name_ar` VARCHAR(150) NOT NULL, -- E.g. 'تنظيف منازل'
-  `short_name_ar` VARCHAR(50) NOT NULL, -- E.g. 'تنظيف'
+  `public_id` VARCHAR(36) NOT NULL UNIQUE,
+  `key` VARCHAR(100) NOT NULL UNIQUE,
+  `slug` VARCHAR(100) NOT NULL UNIQUE,
+  `display_name_ar` VARCHAR(150) NOT NULL,
+  `short_name_ar` VARCHAR(50) NOT NULL,
   `description_ar` TEXT NULL,
-  `icon_key` VARCHAR(100) NULL,
+  `icon` VARCHAR(100) NULL,
   `sort_order` INT NOT NULL DEFAULT 0,
+  `meta_title_ar` VARCHAR(255) NULL,
+  `meta_description_ar` TEXT NULL,
   `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+  `is_deleted` TINYINT(1) NOT NULL DEFAULT 0,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,

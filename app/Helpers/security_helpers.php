@@ -1,17 +1,13 @@
 <?php
-/**
- * security_helpers.php
- * Khadomeh Security Helpers
- * 
- * Provides features for CSRF protection and XSS mitigation.
- */
 
-/**
- * Escape HTML content for safe output rendering to prevent Cross-Site Scripting (XSS).
- * Shorthand alias of htmlspecialchars().
- */
+use App\Core\CSRF;
+
 if (!function_exists('e')) {
-    function e($value) {
+    /**
+     * Escape HTML content for safe output rendering (XSS mitigation).
+     */
+    function e(?string $value): string
+    {
         if ($value === null) {
             return '';
         }
@@ -19,41 +15,32 @@ if (!function_exists('e')) {
     }
 }
 
-/**
- * Generate a cryptographically secure CSRF token and save it to the session.
- */
 if (!function_exists('csrf_token')) {
-    function csrf_token() {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-        if (empty($_SESSION['csrf_token'])) {
-            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-        }
-        return $_SESSION['csrf_token'];
+    /**
+     * Get the active session CSRF token.
+     */
+    function csrf_token(): string
+    {
+        return CSRF::getToken();
     }
 }
 
-/**
- * Verify if the submitted token matches the token stored in the session.
- */
-if (!function_exists('verify_csrf_token')) {
-    function verify_csrf_token($token) {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-        if (empty($_SESSION['csrf_token']) || empty($token)) {
-            return false;
-        }
-        return hash_equals($_SESSION['csrf_token'], $token);
-    }
-}
-
-/**
- * Generate a hidden CSRF token input field for HTML forms.
- */
 if (!function_exists('csrf_field')) {
-    function csrf_field() {
-        return '<input type="hidden" name="csrf_token" value="' . csrf_token() . '">';
+    /**
+     * Generate HTML input tag for CSRF tokens.
+     */
+    function csrf_field(): string
+    {
+        return CSRF::field();
+    }
+}
+
+if (!function_exists('verify_csrf_token')) {
+    /**
+     * Validate the given CSRF token.
+     */
+    function verify_csrf_token(?string $token): bool
+    {
+        return CSRF::validate($token);
     }
 }

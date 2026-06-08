@@ -1,72 +1,145 @@
 <?php
-/**
- * Router.php
- * Khadomeh Core Routing System
- * 
- * A lightweight front-controller routing class.
- * It resolves request URIs, handles XAMPP subfolders dynamically,
- * and routes requests to appropriate pages.
- */
 
 namespace App\Core;
 
-class Router {
-    private $routes = [];
+class Router
+{
+    private array $routes = [];
 
     /**
-     * Register a custom route and callback.
+     * Register a GET route.
      */
-    public function add($route, $callback) {
-        $this->routes[$route] = $callback;
+    public function get(string $path, $handler, array $middlewares = []): void
+    {
+        $this->addRoute('GET', $path, $handler, $middlewares);
     }
 
     /**
-     * Dispatch the request.
+     * Register a POST route.
      */
-    public function dispatch() {
-        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-        
-        // Remove subfolder prefix (e.g., /khadomeh) if running locally
-        $basePath = parse_url(APP_URL, PHP_URL_PATH);
-        if ($basePath && $basePath !== '/' && strpos($uri, $basePath) === 0) {
-            $uri = substr($uri, strlen($basePath));
-        }
-        
-        // Normalize empty URI or missing leading slash
-        if (empty($uri)) {
-            $uri = '/';
-        }
-        
-        // Trim trailing slash for routing parity (except root)
-        if ($uri !== '/' && substr($uri, -1) === '/') {
-            $uri = rtrim($uri, '/');
-        }
+    public function post(string $path, $handler, array $middlewares = []): void
+    {
+        $this->addRoute('POST', $path, $handler, $middlewares);
+    }
 
-        // 1. Check registered custom routes
-        if (array_key_exists($uri, $this->routes)) {
-            $callback = $this->routes[$uri];
-            if (is_callable($callback)) {
-                return call_user_func($callback);
+    /**
+     * Register a generic route.
+     */
+    private function addRoute(string $method, string $path, $handler, array $middlewares): void
+    {
+        $path = '/' . trim($path, '/');
+        $this->routes[] = [
+            'method' => $method,
+            'path' => $path,
+            'handler' => $handler,
+            'middlewares' => $middlewares
+        ];
+    }
+
+    /**
+     * Resolve and dispatch the incoming request.
+     */
+    public function dispatch(Request $request): Response
+    {
+        $requestMethod = $request->getMethod();
+        $requestPath = '/' . trim($request->getPath(), '/');
+
+        foreach ($this->routes as $route) {
+            if ($route['method'] !== $requestMethod) {
+                continue;
+            }
+
+            // Convert route wildcards (e.g. {city}) to capture groups
+            $pattern = preg_replace('/\{[a-zA-Z0-9_]+\}/', '([^/]+)', $route['path']);
+            $pattern = '#^' . $pattern . '$#';
+
+            if (preg_match($pattern, $requestPath, $matches)) {
+                array_shift($matches); // Remove full match
+
+                // 1. Execute route-specific middlewares
+                foreach ($route['middlewares'] as $middlewareClass) {
+                    if (class_exists($middlewareClass)) {
+                        $middleware = new $middlewareClass();
+                        $result = $middleware->handle($request);
+                        if ($result instanceof Response) {
+                            return $result; // Short-circuit response
+                        }
+                    }
+                }
+
+                // 2. Execute target handler
+                $handler = $route['handler'];
+                
+                if (is_array($handler) && count($handler) === 2) {
+                    [$controllerClass, $method] = $handler;
+                    if (class_exists($controllerClass)) {
+                        $controller = new $controllerClass();
+                        
+                        // Pass Request object and any URL parameters to the action
+                        $params = array_merge([$request], $matches);
+                        $result = call_user_func_array([$controller, $method], $params);
+                        
+                        if ($result instanceof Response) {
+                            return $result;
+                        }
+                        
+                        $response = new Response();
+                        $response->setContent((string)$result);
+                        return $response;
+                    }
+                } elseif (is_callable($handler)) {
+                    $params = array_merge([$request], $matches);
+                    $result = call_user_func_array($handler, $params);
+                    
+                    if ($result instanceof Response) {
+                        return $result;
+                    }
+                    
+                    $response = new Response();
+                    $response->setContent((string)$result);
+                    return $response;
+                }
             }
         }
 
-        // 2. Default route for Home
-        if ($uri === '/' || $uri === '/index.php') {
-            require APP_DIR . '/pages/home.php';
-            return;
-        }
+        // Return a clean 404 Response
+        return self::renderNotFound();
+    }
 
-        // 3. Fallback to /pages/[slug].php for clean page rendering
-        $pageSlug = trim($uri, '/');
-        $pageFile = APP_DIR . '/pages/' . $pageSlug . '.php';
+    /**
+     * Render the default 404 Not Found Page.
+     */
+    private static function renderNotFound(): Response
+    {
+        $response = new Response();
+        $response->setStatusCode(404);
         
-        if (!empty($pageSlug) && file_exists($pageFile) && strpos($pageSlug, '..') === false) {
-            require $pageFile;
-            return;
+        $viewsDir = Config::get('app.paths.root') . '/views';
+        $notFoundFile = $viewsDir . '/404.php';
+        
+        if (file_exists($notFoundFile)) {
+            ob_start();
+            require $notFoundFile;
+            $response->setContent(ob_get_clean());
+        } else {
+            $response->setContent('<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>404 - الصفحة غير موجودة</title>
+    <style>
+        body { font-family: Tahoma, sans-serif; text-align: center; padding: 50px; background: #faf8f5; color: #555; }
+        h1 { color: #c05c46; }
+    </style>
+</head>
+<body>
+    <h1>404 - الصفحة غير موجودة</h1>
+    <p>عذراً، الرابط الذي طلبته غير موجود أو تم نقله.</p>
+    <a href="/">العودة للرئيسية</a>
+</body>
+</html>');
         }
-
-        // 4. Default fallback: Route Not Found (404)
-        Response::setStatusCode(404);
-        require APP_DIR . '/pages/not-found.php';
+        
+        return $response;
     }
 }

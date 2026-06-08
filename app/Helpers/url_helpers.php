@@ -1,39 +1,53 @@
 <?php
-/**
- * url_helpers.php
- * Khadomeh URL Resolution Helpers
- * 
- * Provides functions for absolute and relative routing references,
- * matching current environment config.
- */
 
-if (!defined('IN_APP')) {
-    define('IN_APP', true);
-}
+use App\Core\Config;
+use App\Core\Response;
 
-/**
- * Generate an absolute URL pointing to a path.
- */
-if (!function_exists('base_url')) {
-    function base_url($path = '') {
-        return APP_URL . '/' . ltrim($path, '/');
+if (!function_exists('url')) {
+    /**
+     * Generate an absolute URL pointing to a path.
+     */
+    function url(string $path = ''): string
+    {
+        $base = rtrim(Config::get('app.url', ''), '/');
+        return $base . '/' . ltrim($path, '/');
     }
 }
 
-/**
- * Generate an absolute URL pointing to a public asset.
- */
-if (!function_exists('asset_url')) {
-    function asset_url($path = '') {
-        return base_url('public/assets/' . ltrim($path, '/'));
+if (!function_exists('asset')) {
+    /**
+     * Generate an absolute URL pointing to a public asset.
+     */
+    function asset(string $path = ''): string
+    {
+        return url('assets/' . ltrim($path, '/'));
     }
 }
 
-/**
- * Generate an absolute URL pointing to an admin route.
- */
-if (!function_exists('admin_url')) {
-    function admin_url($path = '') {
-        return base_url('admin/' . ltrim($path, '/'));
+if (!function_exists('redirect')) {
+    /**
+     * Redirect to a specific URL path.
+     */
+    function redirect(string $path, int $statusCode = 302): void
+    {
+        Response::redirect($path, $statusCode);
+    }
+}
+
+if (!function_exists('redirectBack')) {
+    /**
+     * Redirect back to the HTTP referrer, falling back to home if unavailable.
+     */
+    function redirectBack(string $fallback = '/'): void
+    {
+        $referrer = $_SERVER['HTTP_REFERER'] ?? '';
+        $baseUrl = Config::get('app.url', '');
+
+        // Prevent Open Redirect vulnerabilities
+        if ($referrer && strpos($referrer, $baseUrl) === 0) {
+            Response::redirect($referrer);
+        } else {
+            Response::redirect($fallback);
+        }
     }
 }

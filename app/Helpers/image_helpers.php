@@ -1,18 +1,11 @@
 <?php
-/**
- * image_helpers.php
- * Khadomeh Image Resolution & Placeholder Helpers
- * 
- * Provides base64 SVG generators to render theme-compliant visual placeholders
- * dynamically in the browser, bypassing the need for heavy or external images.
- */
 
-/**
- * Generate a dynamic SVG placeholder inline data URI.
- * Complies with the Light Warm Trust design palette.
- */
 if (!function_exists('get_placeholder_svg')) {
-    function get_placeholder_svg($width = 300, $height = 200, $text = 'خدومة') {
+    /**
+     * Generate an inline inline base64 SVG theme placeholder.
+     */
+    function get_placeholder_svg(int $width = 300, int $height = 200, string $text = 'خدومة'): string
+    {
         $bgColor = '#fdfbf7';     // Light cream warm color
         $textColor = '#8a7768';   // Soft warm taupe
         $borderColor = '#f3ebd9'; // Subtle border highlight
@@ -27,13 +20,15 @@ if (!function_exists('get_placeholder_svg')) {
     }
 }
 
-/**
- * Check if the target provider image exists, otherwise return a styled SVG placeholder.
- */
 if (!function_exists('get_provider_image')) {
-    function get_provider_image($path, $width = 150, $height = 150, $text = 'صورة الحرفي') {
-        if (!empty($path) && file_exists(APP_DIR . '/' . $path)) {
-            return base_url($path);
+    /**
+     * Check if provider photo exists, returning standard inline SVG placeholder if missing.
+     */
+    function get_provider_image(?string $path, int $width = 150, int $height = 150, string $text = 'صورة الحرفي'): string
+    {
+        $rootDir = dirname(dirname(__DIR__));
+        if (!empty($path) && file_exists($rootDir . '/public/' . ltrim($path, '/'))) {
+            return url($path);
         }
         return get_placeholder_svg($width, $height, $text);
     }

@@ -1,28 +1,20 @@
 <?php
-/**
- * text_helpers.php
- * Khadomeh Arabic Text Helpers
- * 
- * Provides utilities for normalization of Arabic script for indexing/searching
- * and generating search engine friendly slugs.
- */
 
-/**
- * Normalize Arabic text by removing diacritics, unifying alifs, yaas, and taa-marbootas.
- * Crucial for fuzzy search matching (e.g. matching "أحمد" with "احمد" and "احمد ").
- */
 if (!function_exists('normalize_arabic')) {
-    function normalize_arabic($text) {
+    /**
+     * Normalize Arabic text by removing diacritics, unifying Alifs, Yaas, and Taa-marbootas.
+     */
+    function normalize_arabic(?string $text): string
+    {
         if (empty($text)) {
             return '';
         }
 
-        // Convert to lowercase and trim
         $text = trim($text);
 
         // Remove Arabic diacritics (harakat)
         $diacritics = [
-            '|', // Shadda
+            'ّ', // Shadda
             'َ', // Fatha
             'ً', // Tanween Fath
             'ُ', // Damma
@@ -50,27 +42,76 @@ if (!function_exists('normalize_arabic')) {
     }
 }
 
-/**
- * Generate a URL-friendly slug, keeping Arabic characters intact.
- */
 if (!function_exists('slugify')) {
-    function slugify($text) {
+    /**
+     * Generate a URL-friendly slug, keeping Arabic characters intact.
+     */
+    function slugify(?string $text): string
+    {
         if (empty($text)) {
             return '';
         }
 
-        // Trim whitespace
         $text = trim($text);
 
-        // Convert spaces and special characters to hyphens
+        // Replace spaces and special characters with hyphens
         $text = preg_replace('/[^\p{L}\p{N}]+/u', '-', $text);
 
-        // Remove trailing/leading hyphens
+        // Strip leading/trailing hyphens
         $text = trim($text, '-');
 
         // Convert to lowercase
         $text = mb_strtolower($text, 'UTF-8');
 
         return empty($text) ? 'n-a' : $text;
+    }
+}
+
+if (!function_exists('phone_format')) {
+    /**
+     * Clean and normalize phone numbers for Syrian operators.
+     */
+    function phone_format(?string $phone): string
+    {
+        if (empty($phone)) {
+            return '';
+        }
+
+        // Keep only digits and plus sign
+        $phone = preg_replace('/[^\d+]/', '', $phone);
+
+        // Normalize +9639xxxxxxxx to 09xxxxxxxx
+        if (strpos($phone, '+963') === 0) {
+            $phone = '0' . substr($phone, 4);
+        } elseif (strpos($phone, '963') === 0) {
+            $phone = '0' . substr($phone, 3);
+        }
+
+        return $phone;
+    }
+}
+
+if (!function_exists('price_format')) {
+    /**
+     * Format a price value in Syrian Pounds (ل.س).
+     */
+    function price_format($amount): string
+    {
+        $val = (float)$amount;
+        return number_format($val, 0, '.', ',') . ' ل.س';
+    }
+}
+
+if (!function_exists('date_format_locale')) {
+    /**
+     * Format a datetime string or timestamp into a readable date.
+     */
+    function date_format_locale($date, string $format = 'Y-m-d'): string
+    {
+        if (empty($date)) {
+            return '';
+        }
+        $timestamp = is_numeric($date) ? (int)$date : strtotime($date);
+        return $timestamp ? date($format, $timestamp) : '';
     }
 }

@@ -6,19 +6,15 @@
 
 namespace App\Repositories;
 
-use App\Core\Database;
+use App\Core\Repository;
 
-class ProviderRepository {
-    private $db;
-
-    public function __construct() {
-        $this->db = Database::getInstance();
-    }
-
+class ProviderRepository extends Repository
+{
     /**
      * Count total active providers.
      */
-    public function count() {
+    public function count(): int
+    {
         return (int) $this->db->fetchColumn(
             "SELECT COUNT(*) FROM `providers` WHERE `is_active` = 1 AND `deleted_at` IS NULL"
         );
@@ -27,7 +23,8 @@ class ProviderRepository {
     /**
      * Count providers by their workflow status (pending, approved, rejected, suspended).
      */
-    public function countByStatus($status) {
+    public function countByStatus(string $status): int
+    {
         return (int) $this->db->fetchColumn(
             "SELECT COUNT(*) FROM `providers` WHERE `status` = ? AND `deleted_at` IS NULL",
             [$status]
@@ -37,7 +34,8 @@ class ProviderRepository {
     /**
      * Get latest approved providers with limit.
      */
-    public function getLatestApproved($limit = 10) {
+    public function getLatestApproved(int $limit = 10): array
+    {
         $sql = "SELECT p.*, s.display_name_ar as service_name, c.display_name_ar as city_name 
                 FROM `providers` p
                 LEFT JOIN `services` s ON p.primary_service_id = s.id
