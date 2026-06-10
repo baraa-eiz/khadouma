@@ -153,17 +153,17 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
                 require APP_DIR . '/views/components/empty_state.php';
                 ?>
 
-                <div class="empty-suggestions-container" style="margin-top: 32px; background: white; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 24px;">
-                    <h3 style="font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 16px;">اقتراحات بديلة للبحث:</h3>
+                <div class="empty-suggestions-container" style="margin-top: 32px; background: white; border: 1px solid var(--border-color); border-radius: 12px; padding: 24px;">
+                    <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px;">اقتراحات بديلة للبحث:</h3>
                     
                     <div style="margin-bottom: 20px;">
-                        <span style="font-size: 13px; color: var(--text-muted); display: block; margin-bottom: 8px;">تصفح الخدمات الشائعة:</span>
+                        <span style="font-size: 13px; color: var(--text-secondary); display: block; margin-bottom: 8px;">تصفح الخدمات الشائعة:</span>
                         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                             <?php 
                             $suggestedServices = array_slice($services, 0, 6);
                             foreach ($suggestedServices as $srv): 
                             ?>
-                                <a href="<?= url('search/' . $srv['slug'] . ($selectedCity ? '/' . $selectedCity['slug'] : '')) ?>" class="badge badge-secondary" style="padding: 8px 14px; font-size: 13px; border: 1px solid var(--border-color); background: var(--bg-hover); color: var(--text-color); text-decoration: none; border-radius: 20px; transition: all 0.2s ease;">
+                                <a href="<?= base_url('search?service=' . $srv['slug'] . ($selectedCity ? '&city=' . $selectedCity['slug'] : '')) ?>" class="badge badge-secondary" style="padding: 8px 14px; font-size: 13px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary); text-decoration: none; border-radius: 20px; transition: all 0.2s ease;">
                                     <?= e($srv['display_name_ar']) ?>
                                 </a>
                             <?php endforeach; ?>
@@ -171,23 +171,28 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
                     </div>
 
                     <div>
-                        <span style="font-size: 13px; color: var(--text-muted); display: block; margin-bottom: 8px;">أو ابحث في مدن أخرى:</span>
+                        <span style="font-size: 13px; color: var(--text-secondary); display: block; margin-bottom: 8px;">أو ابحث في مدن أخرى:</span>
                         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                             <?php 
                             $suggestedCities = array_slice($cities, 0, 6);
                             foreach ($suggestedCities as $cty): 
                             ?>
-                                <a href="<?= url('search/' . ($selectedService ? $selectedService['slug'] : 'all') . '/' . $cty['slug']) ?>" class="badge badge-secondary" style="padding: 8px 14px; font-size: 13px; border: 1px solid var(--border-color); background: var(--bg-hover); color: var(--text-color); text-decoration: none; border-radius: 20px; transition: all 0.2s ease;">
+                                <a href="<?= base_url('search?city=' . $cty['slug'] . ($selectedService ? '&service=' . $selectedService['slug'] : '')) ?>" class="badge badge-secondary" style="padding: 8px 14px; font-size: 13px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary); text-decoration: none; border-radius: 20px; transition: all 0.2s ease;">
                                     <?= e($cty['display_name_ar']) ?>
                                 </a>
                             <?php endforeach; ?>
                         </div>
                     </div>
+
+                    <div style="margin-top: 24px; text-align: center; border-top: 1px solid var(--border-color); padding-top: 20px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+                        <a href="<?= base_url('search') ?>" class="btn btn-primary btn-sm">إعادة تعيين البحث 🔄</a>
+                        <a href="<?= base_url() ?>" class="btn btn-secondary btn-sm">العودة للرئيسية 🏠</a>
+                    </div>
                 </div>
             <?php else: ?>
                 <div class="results-grid">
                     <?php foreach ($providers as $prov): ?>
-                        <article class="card provider-card" style="display: flex; flex-direction: column; height: 100%; justify-content: space-between;">
+                        <article class="card provider-card">
                             <div>
                                 <!-- Provider Header -->
                                 <div class="provider-header" style="display: flex; gap: 15px; margin-bottom: 15px;">
@@ -195,10 +200,10 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
                                         <img src="<?= get_provider_image($prov['profile_image'] ?? null, 60, 60, '👨‍🔧') ?>" alt="صورة <?= e($prov['display_name_ar']) ?>" style="width:100%; height:100%; object-fit:cover;">
                                     </div>
                                     <div class="provider-info-header" style="display: flex; flex-direction: column; justify-content: center;">
-                                        <h3 class="provider-name" style="font-size: 1.1rem; font-weight: 700; margin: 0;">
+                                        <h3 class="provider-name" style="font-size: 1.1rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
                                             <a href="<?= base_url('provider/' . $prov['slug']) ?>" style="color: var(--text-primary);"><?= e($prov['display_name_ar']) ?></a>
                                             <?php if ($prov['verified']): ?>
-                                                <span class="badge-verified-icon" title="موثق من الإدارة">✔️</span>
+                                                <span class="badge-tag badge-verified" style="font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; line-height: 1;">موثق</span>
                                             <?php endif; ?>
                                         </h3>
                                         <span class="provider-service-tag" style="font-size: 0.8rem; font-weight: 700; color: var(--accent-primary); background-color: #fdf2ee; padding: 2px 8px; border-radius: 4px; align-self: flex-start; margin-top: 4px;">
@@ -232,9 +237,6 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
                                             - <?= e($prov['areas'][0]['display_name_ar']) ?>
                                         <?php endif; ?>
                                     </div>
-                                    <div class="provider-rating" style="display: flex; align-items: center; gap: 4px; font-weight: bold; color: var(--text-primary);">
-                                        ⭐ <?= number_format($prov['rating'], 1) ?> (<?= (int)$prov['reviews_count'] ?>)
-                                    </div>
                                 </div>
 
                                 <!-- Contact & Action Buttons -->
@@ -242,7 +244,7 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
                                     <button class="btn btn-primary contact-btn" data-provider-id="<?= (int)$prov['id'] ?>" data-method="phone_call" style="font-size: 0.85rem; padding: 8px 12px;">
                                         📞 اتصل الآن
                                     </button>
-                                    <button class="btn btn-whatsapp contact-btn" data-provider-id="<?= (int)$prov['id'] ?>" data-method="whatsapp_message" style="font-size: 0.85rem; padding: 8px 12px;">
+                                    <button class="btn btn-whatsapp-outline contact-btn" data-provider-id="<?= (int)$prov['id'] ?>" data-method="whatsapp_message" style="font-size: 0.85rem; padding: 8px 12px;">
                                         💬 واتساب
                                     </button>
                                 </div>

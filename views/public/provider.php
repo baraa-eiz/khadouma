@@ -34,21 +34,27 @@ echo json_ld_local_business($schemaData);
 ?>
 
 <div class="container provider-profile-page" style="margin-top: 20px;">
-    <!-- Breadcrumbs -->
-    <nav class="breadcrumb-nav" aria-label="مسار التنقل">
-        <ul class="breadcrumb-list" style="display: flex; gap: 8px; font-size: 0.9rem; margin-bottom: 25px; list-style: none; padding: 0;">
-            <?php $i = 0; $totalCrumbs = count($breadcrumbs); ?>
-            <?php foreach ($breadcrumbs as $name => $link): ?>
-                <?php $i++; ?>
-                <?php if ($i === $totalCrumbs): ?>
-                    <li style="color: var(--text-secondary);"><?= e($name) ?></li>
-                <?php else: ?>
-                    <li><a href="<?= e($link) ?>"><?= e($name) ?></a></li>
-                    <span style="color: var(--text-secondary);">/</span>
-                <?php endif; ?>
-            <?php endforeach; ?>
-        </ul>
-    </nav>
+    <!-- Top Nav Action Bar -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 25px;">
+        <!-- Breadcrumbs -->
+        <nav class="breadcrumb-nav" aria-label="مسار التنقل" style="margin-bottom: 0;">
+            <ul class="breadcrumb-list" style="display: flex; gap: 8px; font-size: 0.9rem; list-style: none; padding: 0; margin: 0;">
+                <?php $i = 0; $totalCrumbs = count($breadcrumbs); ?>
+                <?php foreach ($breadcrumbs as $name => $link): ?>
+                    <?php $i++; ?>
+                    <?php if ($i === $totalCrumbs): ?>
+                        <li style="color: var(--text-secondary);"><?= e($name) ?></li>
+                    <?php else: ?>
+                        <li><a href="<?= e($link) ?>" style="color: var(--text-primary); text-decoration: none;"><?= e($name) ?></a></li>
+                        <span style="color: var(--text-secondary);">/</span>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+            </ul>
+        </nav>
+        <a href="javascript:history.back()" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 6px; font-weight: bold;">
+            ← العودة لنتائج البحث
+        </a>
+    </div>
 
     <!-- Error Banner for AJAX contact calls -->
     <div id="contact-error-banner" class="alert alert-danger" style="display: none; margin-bottom: 20px;"></div>
@@ -69,31 +75,34 @@ echo json_ld_local_business($schemaData);
                     <?= e($provider['service_name']) ?>
                 </span>
 
-                <!-- Rating -->
-                <div class="rating-display" style="display: flex; justify-content: center; align-items: center; gap: 6px; font-weight: bold; margin-bottom: 20px;">
-                    <span style="color: #f39c12; font-size: 1.2rem;">⭐</span>
-                    <span style="font-size: 1.1rem; color: var(--text-primary);"><?= number_format($provider['rating'], 1) ?></span>
-                    <span style="color: var(--text-secondary); font-size: 0.9rem;">(<?= (int)$provider['reviews_count'] ?> تقييم)</span>
+                <!-- Contact Buttons (Priority 1) -->
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                    <button class="btn btn-primary contact-btn" data-provider-id="<?= (int)$provider['id'] ?>" data-method="phone_call" style="font-size: 1rem; font-weight: 700; width: 100%;">
+                        📞 اتصل بالطلب
+                    </button>
+                    <button class="btn btn-whatsapp-outline contact-btn" data-provider-id="<?= (int)$provider['id'] ?>" data-method="whatsapp_message" style="font-size: 1rem; font-weight: 700; width: 100%;">
+                        💬 مراسلة عبر واتساب
+                    </button>
                 </div>
 
-                <!-- Verified status badges -->
+                <!-- Verified status badges (Priority 2) -->
                 <div class="verified-badges-list" style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); padding: 15px 0; margin-bottom: 20px; text-align: right;">
-                    <div style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 600;">
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">
                         <span style="font-size: 1.1rem;"><?= $provider['verified'] ? '✅' : '❌' ?></span>
                         <span>توثيق الهوية والملف</span>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 600;">
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">
                         <span style="font-size: 1.1rem;"><?= $provider['phone_verified'] ? '✅' : '❌' ?></span>
                         <span>التحقق من رقم الهاتف</span>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 600;">
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">
                         <span style="font-size: 1.1rem;"><?= $provider['identity_verified'] ? '✅' : '❌' ?></span>
                         <span>فحص السجل الجنائي والخلفية</span>
                     </div>
                 </div>
 
-                <!-- Pricing -->
-                <div style="margin-bottom: 20px;">
+                <!-- Pricing (Priority 3) -->
+                <div style="margin-bottom: 10px;">
                     <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 4px;">بداية الأسعار المتوقعة</div>
                     <div style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">
                         <?php if (!empty($provider['starting_price'])): ?>
@@ -102,16 +111,6 @@ echo json_ld_local_business($schemaData);
                             <span style="font-size: 0.95rem; font-weight: 600; color: var(--text-secondary);">غير محدد</span>
                         <?php endif; ?>
                     </div>
-                </div>
-
-                <!-- Contact Buttons -->
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <button class="btn btn-primary contact-btn" data-provider-id="<?= (int)$provider['id'] ?>" data-method="phone_call" style="width: 100%; padding: 12px; font-size: 1rem; font-weight: 700;">
-                        📞 اتصل بالطلب
-                    </button>
-                    <button class="btn btn-whatsapp contact-btn" data-provider-id="<?= (int)$provider['id'] ?>" data-method="whatsapp_message" style="width: 100%; padding: 12px; font-size: 1rem; font-weight: 700;">
-                        💬 مراسلة عبر واتساب
-                    </button>
                 </div>
             </div>
 
@@ -176,41 +175,13 @@ echo json_ld_local_business($schemaData);
                         <?php foreach ($workPhotos as $photo): ?>
                             <?php $imgUrl = get_provider_image($photo['image_path'], 200, 150, e($photo['alt_text_ar'] ?: 'عمل فني')); ?>
                             <div class="gallery-item" style="border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); aspect-ratio: 4/3; cursor: pointer; background: #000;">
-                                <img src="<?= $imgUrl ?>" alt="<?= e($photo['alt_text_ar'] ?: 'عمل فني') ?>" style="width: 100%; height: 100%; object-fit: cover; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1" onclick="openLightbox('<?= $imgUrl ?>')">
+                                <img src="<?= $imgUrl ?>" alt="<?= e($photo['alt_text_ar'] ?: 'عمل فني') ?>" style="width: 100%; height: 100%; object-fit: cover; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1" onclick="openLightbox('<?= base_url($photo['image_path']) ?>')">
                             </div>
                         <?php endforeach; ?>
                     </div>
                 </section>
             <?php endif; ?>
 
-            <!-- Customer Reviews Section -->
-            <section class="card" style="padding: 30px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px;">
-                <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">تقييمات وآراء العملاء</h2>
-                
-                <?php if (empty($reviews)): ?>
-                    <div style="text-align: center; padding: 20px 0; color: var(--text-secondary);">
-                        <p style="font-size: 1.1rem; margin-bottom: 5px;">لا توجد تقييمات معتمدة لهذا الحرفي بعد.</p>
-                        <p style="font-size: 0.9rem;">تواصل مع مزود الخدمة وكن أول من يقيم جودة العمل والمصداقية!</p>
-                    </div>
-                <?php else: ?>
-                    <div class="reviews-list" style="display: flex; flex-direction: column; gap: 20px;">
-                        <?php foreach ($reviews as $rev): ?>
-                            <div class="review-item" style="border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                    <strong><?= e($rev['reviewer_name']) ?></strong>
-                                    <span style="font-size: 0.85rem; color: var(--text-secondary);"><?= date('Y-m-d', strtotime($rev['created_at'])) ?></span>
-                                </div>
-                                <div style="color: #f39c12; font-size: 0.9rem; margin-bottom: 8px;">
-                                    <?= str_repeat('⭐', (int)$rev['rating']) ?>
-                                </div>
-                                <p style="font-size: 0.95rem; color: var(--text-primary); line-height: 1.5; margin: 0; white-space: pre-line;">
-                                    <?= e($rev['review_text']) ?>
-                                </p>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
-            </section>
         </main>
     </div>
 </div>

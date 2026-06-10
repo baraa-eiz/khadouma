@@ -121,11 +121,7 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
                     <div>
                         <div class="provider-header" style="display: flex; gap: 15px; margin-bottom: 15px;">
                             <div class="provider-img-wrapper" style="width: 60px; height: 60px; border-radius: 50%; overflow: hidden; border: 2px solid var(--border-color); flex-shrink: 0;">
-                                <?php if (!empty($p['profile_image'])): ?>
-                                    <img src="<?= base_url($p['profile_image']) ?>" alt="صورة <?= e($p['display_name_ar']) ?>" style="width: 100%; height: 100%; object-fit: cover;">
-                                <?php else: ?>
-                                    <div style="background-color:var(--bg-secondary); color:var(--text-secondary); display:flex; align-items:center; justify-content:center; width:100%; height:100%; font-size:1.8rem; line-height: 60px; text-align: center;">👨‍🔧</div>
-                                <?php endif; ?>
+                                <img src="<?= get_provider_image($p['profile_image'] ?? null, 60, 60, '👨‍🔧') ?>" alt="صورة <?= e($p['display_name_ar']) ?>" style="width: 100%; height: 100%; object-fit: cover;">
                             </div>
                             <div class="provider-info-header" style="display: flex; flex-direction: column; justify-content: center;">
                                 <h3 class="provider-name" style="font-size: 1.1rem; font-weight: 700; margin: 0;">
@@ -154,16 +150,13 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
                     <div>
                         <div class="provider-meta" style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 10px; margin-bottom: 15px; font-size: 0.85rem; color: var(--text-secondary);">
                             <span class="provider-location">📍 <?= e($p['city_name']) ?></span>
-                            <div class="provider-rating" style="display: flex; align-items: center; gap: 4px; font-weight: bold; color: var(--text-primary);">
-                                ⭐ <?= number_format($p['rating'], 1) ?> (<?= (int)$p['reviews_count'] ?>)
-                            </div>
                         </div>
                         
                         <div class="provider-actions" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                             <button class="btn btn-primary contact-btn" data-provider-id="<?= (int)$p['id'] ?>" data-method="phone_call" style="font-size: 0.85rem; padding: 8px 12px;">
                                 📞 اتصل الآن
                             </button>
-                            <button class="btn btn-whatsapp contact-btn" data-provider-id="<?= (int)$p['id'] ?>" data-method="whatsapp_message" style="font-size: 0.85rem; padding: 8px 12px;">
+                            <button class="btn btn-whatsapp-outline contact-btn" data-provider-id="<?= (int)$p['id'] ?>" data-method="whatsapp_message" style="font-size: 0.85rem; padding: 8px 12px;">
                                 💬 واتساب
                             </button>
                         </div>
