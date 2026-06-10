@@ -97,11 +97,12 @@ if (!function_exists('json_ld_breadcrumbs')) {
         $items = [];
         $i = 1;
         foreach ($crumbs as $name => $link) {
+            $resolvedLink = (strpos($link, 'http://') === 0 || strpos($link, 'https://') === 0) ? $link : url($link);
             $items[] = [
                 '@type' => 'ListItem',
                 'position' => $i++,
                 'name' => $name,
-                'item' => url($link)
+                'item' => $resolvedLink
             ];
         }
 

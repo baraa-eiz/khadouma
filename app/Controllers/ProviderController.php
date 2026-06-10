@@ -290,12 +290,17 @@ class ProviderController extends Controller
         if ($selectedService && $selectedCity) {
             $faqEntries = $db->fetchAll(
                 "SELECT * FROM `faq_entries` 
-                 WHERE (((`service_id` = :service_id AND `city_id` = :city_id) 
-                    OR (`service_id` = :service_id AND `city_id` IS NULL)
-                    OR (`city_id` = :city_id AND `service_id` IS NULL))
+                 WHERE (((`service_id` = :service_id1 AND `city_id` = :city_id1) 
+                    OR (`service_id` = :service_id2 AND `city_id` IS NULL)
+                    OR (`city_id` = :city_id2 AND `service_id` IS NULL))
                    AND `is_active` = 1 AND `deleted_at` IS NULL) 
                  ORDER BY `sort_order` ASC",
-                ['service_id' => $selectedService['id'], 'city_id' => $selectedCity['id']]
+                [
+                    'service_id1' => $selectedService['id'],
+                    'service_id2' => $selectedService['id'],
+                    'city_id1' => $selectedCity['id'],
+                    'city_id2' => $selectedCity['id']
+                ]
             );
         } elseif ($selectedService) {
             $faqEntries = $db->fetchAll(
