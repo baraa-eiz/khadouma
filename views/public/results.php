@@ -43,53 +43,7 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
     <?= json_ld_breadcrumbs($breadcrumbs) ?>
     <?php endif; ?>
 
-    <div class="search-layout" style="display: grid; grid-template-columns: 280px 1fr; gap: 30px;">
-        <!-- Mobile search toggle button (visible on mobile only) -->
-        <style>
-            .search-sidebar {
-                background-color: var(--card-bg);
-                border: 1px solid var(--border-color);
-                border-radius: 12px;
-                padding: 20px;
-                height: fit-content;
-                box-shadow: var(--shadow-subtle);
-            }
-            .results-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-                gap: 20px;
-            }
-            @media (max-width: 768px) {
-                .search-layout {
-                    grid-template-columns: 1fr;
-                }
-                .search-sidebar {
-                    margin-bottom: 20px;
-                }
-            }
-            .badge-verified-icon {
-                color: var(--success-color);
-                font-weight: bold;
-                font-size: 1rem;
-            }
-            .contact-btn {
-                position: relative;
-            }
-            .contact-btn.loading::after {
-                content: '';
-                position: absolute;
-                width: 14px;
-                height: 14px;
-                border: 2px solid transparent;
-                border-top-color: currentColor;
-                border-radius: 50%;
-                animation: spin 0.8s linear infinite;
-            }
-            @keyframes spin {
-                to { transform: rotate(360deg); }
-            }
-        </style>
-
+    <div class="search-layout">
         <!-- Filters Sidebar -->
         <aside class="search-sidebar">
             <h3 style="margin-bottom: 15px; font-size: 1.15rem; font-weight: 800; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">تصفية النتائج</h3>
@@ -140,7 +94,7 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
         <!-- Results Main Section -->
         <main class="results-main">
             <!-- Results Counter & Search Summary -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div class="results-header">
                 <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary);">
                     <?php if ($selectedService && $selectedCity): ?>
                         <?= e($selectedService['display_name_ar']) ?> في <?= e($selectedCity['display_name_ar']) ?>

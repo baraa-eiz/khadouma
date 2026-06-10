@@ -28,7 +28,7 @@ if (!empty($related)):
 ?>
 <div class="content-block related-providers-block" style="margin-top: 50px; border-top: 1px solid var(--border-color); padding-top: 40px;">
     <h3 class="block-title" style="font-size: 1.4rem; font-weight: 800; margin-bottom: 25px; font-family: var(--font-arabic); color: var(--text-primary);">مزودو خدمة آخرون في <?= e($provider['city_name']) ?></h3>
-    <div class="results-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+    <div class="results-grid">
         <?php foreach ($related as $rp): ?>
             <article class="card provider-card" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
                 <div>

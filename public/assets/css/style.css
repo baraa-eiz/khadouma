@@ -119,6 +119,14 @@ img {
 .grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
 .grid-3 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
 .grid-4 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.grid-5 { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+
+@media (max-width: 480px) {
+    .grid-5 {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px !important;
+    }
+}
 
 /* ------------------------------------------------------------
  * 4. HEADER & NAVIGATION
@@ -137,6 +145,7 @@ img {
     justify-content: space-between;
     align-items: center;
     height: 80px;
+    position: relative;
 }
 
 .brand-logo {
@@ -146,10 +155,75 @@ img {
     font-size: 1.5rem;
     font-weight: 800;
     color: var(--text-primary);
+    z-index: 1001;
 }
 
 .brand-logo .logo-icon {
     font-size: 1.8rem;
+}
+
+/* Toggle Menu Button for Mobile */
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    z-index: 1001;
+    min-width: 48px;
+    min-height: 48px;
+    align-items: center;
+    justify-content: center;
+}
+
+.menu-toggle-icon {
+    display: block;
+    position: relative;
+    width: 24px;
+    height: 2px;
+    background: var(--text-primary);
+    transition: background 0.3s;
+}
+
+.menu-toggle-icon::before,
+.menu-toggle-icon::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 24px;
+    height: 2px;
+    background: var(--text-primary);
+    transition: transform 0.3s;
+}
+
+.menu-toggle-icon::before {
+    top: -8px;
+}
+
+.menu-toggle-icon::after {
+    bottom: -8px;
+}
+
+/* Rotate and transform hamburger to cross when expanded */
+.menu-toggle[aria-expanded="true"] .menu-toggle-icon {
+    background: transparent;
+}
+
+.menu-toggle[aria-expanded="true"] .menu-toggle-icon::before {
+    transform: translateY(8px) rotate(45deg);
+}
+
+.menu-toggle[aria-expanded="true"] .menu-toggle-icon::after {
+    transform: translateY(-8px) rotate(-45deg);
+}
+
+/* Nav Wrapper holds both links and actions */
+.nav-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: 1;
+    margin-right: 40px;
 }
 
 .main-nav .nav-list {
@@ -162,6 +236,9 @@ img {
     font-weight: 600;
     padding: 8px 12px;
     border-radius: 6px;
+    min-height: 48px; /* accessibility touch target */
+    display: inline-flex;
+    align-items: center;
 }
 
 .main-nav .nav-link:hover {
@@ -179,6 +256,72 @@ img {
     font-size: 0.9rem;
     color: var(--text-secondary);
     font-weight: 600;
+}
+
+/* Responsive Header Design */
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: flex;
+    }
+
+    .nav-wrapper {
+        display: none;
+        position: absolute;
+        top: 80px;
+        left: 0;
+        right: 0;
+        background-color: var(--card-bg);
+        border-bottom: 1px solid var(--border-color);
+        box-shadow: var(--shadow-medium);
+        padding: 24px 20px;
+        flex-direction: column;
+        gap: 24px;
+        margin-right: 0;
+        z-index: 1000;
+    }
+
+    .nav-wrapper.active {
+        display: flex;
+    }
+
+    .main-nav {
+        width: 100%;
+    }
+
+    .main-nav .nav-list {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+        gap: 12px;
+        padding: 0;
+    }
+
+    .main-nav .nav-link {
+        width: 100%;
+        justify-content: center;
+        padding: 12px;
+    }
+
+    .nav-actions {
+        flex-direction: column;
+        width: 100%;
+        gap: 12px;
+    }
+
+    .nav-actions .btn {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+        min-height: 48px;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .user-welcome {
+        text-align: center;
+        width: 100%;
+        margin-bottom: 4px;
+    }
 }
 
 /* ------------------------------------------------------------
@@ -892,5 +1035,95 @@ a:focus {
 }
 .faq-item[open] .faq-icon {
     color: var(--text-secondary);
+}
+
+/* ------------------------------------------------------------
+ * 10. RESPONSIVE REFACTOR ADDITIONAL STYLES
+ * ------------------------------------------------------------ */
+
+/* Responsive Search & Directory layouts */
+.search-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 30px;
+}
+
+@media (min-width: 769px) {
+    .search-layout {
+        grid-template-columns: 280px 1fr;
+    }
+}
+
+.search-sidebar {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    height: fit-content;
+    box-shadow: var(--shadow-subtle);
+}
+
+@media (max-width: 768px) {
+    .search-sidebar {
+        margin-bottom: 20px;
+    }
+}
+
+/* Hero Typography Refinements for mid-sized screens */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.2rem;
+    }
+    .hero-subtitle {
+        font-size: 1.1rem;
+    }
+}
+
+/* Results Header responsive stack */
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+@media (max-width: 480px) {
+    .results-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* Contact Page stackable elements */
+.contact-method-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: var(--bg-secondary);
+    padding: 15px;
+    border-radius: 8px;
+    transition: var(--transition-smooth);
+}
+
+@media (max-width: 480px) {
+    .contact-method-card {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 8px;
+    }
+}
+
+/* Long word and dynamic image handling for static page content */
+.static-content-block {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.static-content-block img {
+    max-width: 100%;
+    height: auto;
 }
 

@@ -38,7 +38,7 @@ echo json_ld_local_business($schemaData);
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 25px;">
         <!-- Breadcrumbs -->
         <nav class="breadcrumb-nav" aria-label="مسار التنقل" style="margin-bottom: 0;">
-            <ul class="breadcrumb-list" style="display: flex; gap: 8px; font-size: 0.9rem; list-style: none; padding: 0; margin: 0;">
+            <ul class="breadcrumb-list" style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.9rem; list-style: none; padding: 0; margin: 0;">
                 <?php $i = 0; $totalCrumbs = count($breadcrumbs); ?>
                 <?php foreach ($breadcrumbs as $name => $link): ?>
                     <?php $i++; ?>
@@ -59,7 +59,7 @@ echo json_ld_local_business($schemaData);
     <!-- Error Banner for AJAX contact calls -->
     <div id="contact-error-banner" class="alert alert-danger" style="display: none; margin-bottom: 20px;"></div>
 
-    <div class="profile-layout" style="display: grid; grid-template-columns: 320px 1fr; gap: 30px;">
+    <div class="profile-layout">
         
         <!-- Sidebar Info -->
         <aside class="profile-sidebar" style="display: flex; flex-direction: column; gap: 20px;">
@@ -187,7 +187,7 @@ echo json_ld_local_business($schemaData);
 </div>
 
 <!-- Simple Lightbox Modal (For Gallery Images) -->
-<div id="gallery-lightbox" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center;" onclick="closeLightbox()">
+<div id="gallery-lightbox" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center;" onclick="closeLightbox()">
     <img id="lightbox-img" src="" alt="صورة مكبرة" style="max-width: 90%; max-height: 90%; border-radius: 8px; border: 3px solid #fff;">
 </div>
 

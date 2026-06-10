@@ -32,7 +32,7 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
         </p>
         
         <div style="display: flex; flex-direction: column; gap: 20px;">
-            <div style="display: flex; align-items: center; gap: 15px; background: var(--bg-secondary); padding: 15px; border-radius: 8px;">
+            <div class="contact-method-card">
                 <span style="font-size: 2rem;">💬</span>
                 <div>
                     <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-primary);">واتساب الدعم الفني</h3>
@@ -40,7 +40,7 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
                 </div>
             </div>
             
-            <div style="display: flex; align-items: center; gap: 15px; background: var(--bg-secondary); padding: 15px; border-radius: 8px;">
+            <div class="contact-method-card">
                 <span style="font-size: 2rem;">📞</span>
                 <div>
                     <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-primary);">رقم الهاتف</h3>
@@ -48,7 +48,7 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
                 </div>
             </div>
             
-            <div style="display: flex; align-items: center; gap: 15px; background: var(--bg-secondary); padding: 15px; border-radius: 8px;">
+            <div class="contact-method-card">
                 <span style="font-size: 2rem;">✉️</span>
                 <div>
                     <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-primary);">البريد الإلكتروني</h3>

@@ -56,24 +56,32 @@ $metaDesc = isset($metaDesc) ? $metaDesc : '';
                 <span class="logo-text">خدومة</span>
             </a>
 
-            <!-- Main Nav Links -->
-            <nav class="main-nav" aria-label="التنقل الرئيسي">
-                <ul class="nav-list">
-                    <li><a href="<?= base_url() ?>" class="nav-link">الرئيسية</a></li>
-                    <li><a href="<?= base_url('about-us') ?>" class="nav-link">من نحن</a></li>
-                    <li><a href="<?= base_url('terms') ?>" class="nav-link">الشروط والأحكام</a></li>
-                </ul>
-            </nav>
+            <!-- Hamburger Button for Mobile -->
+            <button class="menu-toggle" aria-label="فتح القائمة" aria-expanded="false">
+                <span class="menu-toggle-icon"></span>
+            </button>
 
-            <!-- User Auth Actions -->
-            <div class="nav-actions">
-                <?php if (!empty($_SESSION['admin_logged_in'])): ?>
-                    <span class="user-welcome">مرحباً، <?= e($_SESSION['admin_name']) ?></span>
-                    <a href="<?= admin_url('dashboard.php') ?>" class="btn btn-secondary">لوحة التحكم</a>
-                    <a href="<?= admin_url('logout.php') ?>" class="btn btn-outline btn-sm">تسجيل الخروج</a>
-                <?php else: ?>
-                    <a href="<?= admin_url('login.php') ?>" class="btn btn-outline btn-sm">لوحة الإشراف</a>
-                <?php endif; ?>
+            <!-- Navigation Wrapper (Collapsible on mobile) -->
+            <div class="nav-wrapper">
+                <!-- Main Nav Links -->
+                <nav class="main-nav" aria-label="التنقل الرئيسي">
+                    <ul class="nav-list">
+                        <li><a href="<?= base_url() ?>" class="nav-link">الرئيسية</a></li>
+                        <li><a href="<?= base_url('about-us') ?>" class="nav-link">من نحن</a></li>
+                        <li><a href="<?= base_url('terms') ?>" class="nav-link">الشروط والأحكام</a></li>
+                    </ul>
+                </nav>
+
+                <!-- User Auth Actions -->
+                <div class="nav-actions">
+                    <?php if (!empty($_SESSION['admin_logged_in'])): ?>
+                        <span class="user-welcome">مرحباً، <?= e($_SESSION['admin_name']) ?></span>
+                        <a href="<?= admin_url('dashboard.php') ?>" class="btn btn-secondary">لوحة التحكم</a>
+                        <a href="<?= admin_url('logout.php') ?>" class="btn btn-outline btn-sm">تسجيل الخروج</a>
+                    <?php else: ?>
+                        <a href="<?= admin_url('login.php') ?>" class="btn btn-outline btn-sm">لوحة الإشراف</a>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
     </header>
