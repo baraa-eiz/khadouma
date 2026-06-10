@@ -15,8 +15,25 @@ $metaDesc = isset($metaDesc) ? $metaDesc : '';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= seo_title($pageTitle) ?></title>
-    <?= seo_meta_description($metaDesc) ?>
+    <?php
+    $seoParams = isset($seoData) ? $seoData : [];
+    if (!isset($seoParams['title']) && !empty($pageTitle)) {
+        $seoParams['title'] = $pageTitle;
+    }
+    if (!isset($seoParams['description']) && !empty($metaDesc)) {
+        $seoParams['description'] = $metaDesc;
+    }
+    if (isset($canonicalUrl)) {
+        $seoParams['canonical'] = $canonicalUrl;
+    }
+    echo seo_tags($seoParams);
+    ?>
+    <?php if (isset($prevPageUrl)): ?>
+        <link rel="prev" href="<?= htmlspecialchars($prevPageUrl, ENT_QUOTES, 'UTF-8') ?>">
+    <?php endif; ?>
+    <?php if (isset($nextPageUrl)): ?>
+        <link rel="next" href="<?= htmlspecialchars($nextPageUrl, ENT_QUOTES, 'UTF-8') ?>">
+    <?php endif; ?>
     
     <!-- Google Fonts: Cairo (Arabic) & Outfit (Latin/Numbers) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

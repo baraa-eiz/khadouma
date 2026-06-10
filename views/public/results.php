@@ -20,13 +20,28 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
 
 <div class="container search-results-page">
     <!-- Breadcrumbs -->
-    <nav class="breadcrumb-nav" aria-label="مسار التنقل">
-        <ul class="breadcrumb-list" style="display: flex; gap: 8px; font-size: 0.9rem; margin-bottom: 25px; list-style: none; padding: 0;">
-            <li><a href="<?= base_url() ?>">الرئيسية</a></li>
-            <span style="color: var(--text-secondary);">/</span>
-            <li style="color: var(--text-secondary);">نتائج البحث</li>
+    <?php if (!empty($breadcrumbs)): ?>
+    <nav class="breadcrumb-nav" aria-label="مسار التنقل" style="margin-bottom: 25px;">
+        <ul class="breadcrumb-list" style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.9rem; list-style: none; padding: 0; align-items: center;">
+            <?php 
+            $i = 0;
+            $totalCrumbs = count($breadcrumbs);
+            foreach ($breadcrumbs as $name => $link): 
+                $i++;
+            ?>
+                <?php if (!empty($link) && $i < $totalCrumbs): ?>
+                    <li><a href="<?= $link ?>" style="color: var(--accent-primary); text-decoration: none; font-weight: 600;"><?= e($name) ?></a></li>
+                <?php else: ?>
+                    <li style="color: var(--text-secondary);"><?= e($name) ?></li>
+                <?php endif; ?>
+                <?php if ($i < $totalCrumbs): ?>
+                    <span style="color: var(--text-secondary); margin: 0 4px;">/</span>
+                <?php endif; ?>
+            <?php endforeach; ?>
         </ul>
     </nav>
+    <?= json_ld_breadcrumbs($breadcrumbs) ?>
+    <?php endif; ?>
 
     <div class="search-layout" style="display: grid; grid-template-columns: 280px 1fr; gap: 30px;">
         <!-- Mobile search toggle button (visible on mobile only) -->
@@ -252,8 +267,51 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
                         </article>
                     <?php endforeach; ?>
                 </div>
+                
+                <!-- Pagination -->
+                <?php
+                if (isset($totalPages) && $totalPages > 1) {
+                    $paginationBaseUrl = $canonicalUrl;
+                    // Strip page parameter from the base URL since the pagination component appends it
+                    $paginationBaseUrl = preg_replace('/[?&]page=\d+/', '', $paginationBaseUrl);
+                    
+                    $current_page = $currentPage;
+                    $total_pages = $totalPages;
+                    $total_records = $totalProviders;
+                    $per_page = $perPage;
+                    $base_url = $paginationBaseUrl;
+                    
+                    require APP_DIR . '/views/components/pagination.php';
+                }
+                ?>
             <?php endif; ?>
         </main>
+    </div>
+    
+    <!-- SEO Content Blocks & Internal Links -->
+    <div class="seo-bottom-blocks" style="margin-top: 50px; border-top: 1px solid var(--border-color); padding-top: 30px;">
+        <?php
+        // 1. Coverage area links (if city is selected)
+        if ($selectedCity) {
+            $currentCity = $selectedCity;
+            $currentService = $selectedService;
+            require APP_DIR . '/views/components/nearby_areas.php';
+        }
+        
+        // 2. Related services (alternative services for this search)
+        $currentService = $selectedService;
+        $currentCity = $selectedCity;
+        require APP_DIR . '/views/components/related_services.php';
+        
+        // 3. Contextual FAQs
+        if (!empty($faqEntries)) {
+            require APP_DIR . '/views/components/faq_section.php';
+        }
+        
+        // 4. Popular services & cities (general hubs)
+        require APP_DIR . '/views/components/popular_services.php';
+        require APP_DIR . '/views/components/popular_cities.php';
+        ?>
     </div>
 </div>
 

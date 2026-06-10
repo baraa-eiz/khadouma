@@ -84,16 +84,6 @@ if (!function_exists('json_ld_local_business')) {
             ]
         ];
 
-        if (!empty($provider['average_rating']) && !empty($provider['reviews_count'])) {
-            $schema['aggregateRating'] = [
-                '@type' => 'AggregateRating',
-                'ratingValue' => $provider['average_rating'],
-                'reviewCount' => $provider['reviews_count'],
-                'bestRating' => '5',
-                'worstRating' => '1'
-            ];
-        }
-
         return "\n<script type=\"application/ld+json\">\n" . json_encode($schema, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . "\n</script>";
     }
 }

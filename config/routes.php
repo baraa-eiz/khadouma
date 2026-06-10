@@ -80,5 +80,35 @@ require dirname(__DIR__) . '/app/Modules/Locations/Routes.php';
 // Providers CRUD Module
 require dirname(__DIR__) . '/app/Modules/Providers/Routes.php';
 
+// FAQ Static Page
+$router->get('/faq', function() {
+    if (!defined('IN_APP')) {
+        define('IN_APP', true);
+    }
+    $isLayoutCalled = true;
+    $viewPath = APP_DIR . '/pages/faq.php';
+    ob_start();
+    require APP_DIR . '/includes/layout.php';
+    return ob_get_clean();
+});
+
+// Contact Us Static Page
+$router->get('/contact', function() {
+    if (!defined('IN_APP')) {
+        define('IN_APP', true);
+    }
+    $isLayoutCalled = true;
+    $viewPath = APP_DIR . '/pages/contact.php';
+    ob_start();
+    require APP_DIR . '/includes/layout.php';
+    return ob_get_clean();
+});
+
+// SEO Landing Pages (registered at the bottom to prevent route collisions)
+$router->get('/services/{service}', [App\Controllers\ProviderController::class, 'serviceLanding']);
+$router->get('/cities/{city}', [App\Controllers\ProviderController::class, 'cityLanding']);
+$router->get('/{city}/{service}', [App\Controllers\ProviderController::class, 'cityServiceLanding']);
+
+
 
 

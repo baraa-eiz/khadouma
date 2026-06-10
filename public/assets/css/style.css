@@ -857,3 +857,40 @@ a:focus {
     }
 }
 
+/* Badge links for internal linking blocks */
+.badge-link {
+    display: inline-block;
+    transition: all 0.2s ease-in-out;
+}
+.badge-link:hover {
+    background-color: var(--accent-primary) !important;
+    border-color: var(--accent-primary) !important;
+    color: #ffffff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(224, 92, 70, 0.15);
+}
+
+/* FAQ Item Details Summary Animations */
+.faq-item {
+    transition: all 0.3s ease;
+}
+.faq-item[open] {
+    border-color: var(--accent-primary) !important;
+    box-shadow: var(--shadow-subtle);
+}
+.faq-item summary {
+    user-select: none;
+    outline: none;
+}
+.faq-item summary::-webkit-details-marker {
+    display: none;
+}
+.faq-icon {
+    font-weight: bold;
+    color: var(--accent-primary);
+    transition: transform 0.2s ease;
+}
+.faq-item[open] .faq-icon {
+    color: var(--text-secondary);
+}
+

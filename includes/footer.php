@@ -25,6 +25,8 @@ if (!defined('IN_APP')) {
                     <ul class="footer-links">
                         <li><a href="<?= base_url() ?>">الرئيسية</a></li>
                         <li><a href="<?= base_url('about-us') ?>">من نحن</a></li>
+                        <li><a href="<?= base_url('faq') ?>">الأسئلة الشائعة</a></li>
+                        <li><a href="<?= base_url('contact') ?>">اتصل بنا</a></li>
                         <li><a href="<?= base_url('terms') ?>">الشروط والأحكام</a></li>
                         <li><a href="<?= base_url('privacy') ?>">سياسة الخصوصية</a></li>
                     </ul>
