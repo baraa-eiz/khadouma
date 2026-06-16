@@ -163,6 +163,9 @@ CREATE TABLE `providers` (
   `rating` DECIMAL(3,2) NOT NULL DEFAULT 0.00,
   `reviews_count` INT NOT NULL DEFAULT 0,
   `verified` TINYINT(1) NOT NULL DEFAULT 0,
+  `verification_status` VARCHAR(50) NOT NULL DEFAULT 'unverified',
+  `verification_document_path` VARCHAR(255) NULL,
+  `verification_rejection_reason` TEXT NULL,
   `phone_verified` TINYINT(1) NOT NULL DEFAULT 0,
   `identity_verified` TINYINT(1) NOT NULL DEFAULT 0,
   `has_work_photos` TINYINT(1) NOT NULL DEFAULT 0,
@@ -170,6 +173,7 @@ CREATE TABLE `providers` (
   `is_active` TINYINT(1) NOT NULL DEFAULT 1,
   `is_featured` TINYINT(1) NOT NULL DEFAULT 0,
   `sort_weight` INT NOT NULL DEFAULT 0, -- Higher weight means shows up higher in lists
+  `platform_score` INT NOT NULL DEFAULT 0,
   `status` VARCHAR(50) NOT NULL DEFAULT 'pending', -- 'pending', 'approved', 'rejected', 'suspended'
   `website` VARCHAR(255) NULL,
   `working_hours` VARCHAR(255) NULL,
@@ -243,9 +247,11 @@ CREATE TABLE `reviews` (
   `reviewer_phone` VARCHAR(30) NULL,
   `rating` INT NOT NULL, -- 1 to 5 stars
   `service_id` INT NULL, -- The specific service reviewed
-  `review_text` TEXT NOT NULL,
+  `comment` TEXT NOT NULL,
   `status` VARCHAR(50) NOT NULL DEFAULT 'pending', -- 'pending', 'approved', 'rejected'
   `is_approved` TINYINT(1) NOT NULL DEFAULT 0, -- Duplicate representation for fast queries
+  `ip_hash` VARCHAR(64) NULL,
+  `user_agent_hash` VARCHAR(64) NULL,
   `admin_notes` TEXT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

@@ -121,8 +121,15 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
         <?php else: ?>
             <!-- ================= PUBLISHED / OPERATIONAL STATE ================= -->
             
+            <?php if (($provider['verification_status'] ?? 'unverified') !== 'verified'): ?>
+                <div style="background-color: #fffbeb; border-right: 4px solid #d97706; padding: 12px 18px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; color: #78350f; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                    <span style="font-weight: bold;">⚠️ حسابك غير موثق بعد. يرجى رفع الوثائق المطلوبة في الأسفل لتوثيق الحساب.</span>
+                    <span style="background-color: #fef3c7; color: #b45309; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold;">حماية إضافية وثقة أكبر</span>
+                </div>
+            <?php endif; ?>
+
             <!-- Published Profile Status Banner -->
-            <div class="card" style="padding: 20px 25px; border-radius: 12px; background: #f8fafc; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <div class="card" style="padding: 20px 25px; border-radius: 12px; background: #f8fafc; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
                 <div style="display: flex; align-items: center; gap: 12px;">
                     <div style="width: 12px; height: 12px; border-radius: 50%; background-color: #10b981; animation: pulse 2s infinite;"></div>
                     <div>
@@ -134,6 +141,103 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
                     <a href="<?= url('provider/' . $provider['slug']) ?>" target="_blank" class="btn btn-outline-primary btn-sm" style="font-weight: 700;">
                         👁️ عرض ملفي العام المنشور
                     </a>
+                </div>
+            </div>
+
+            <!-- Verification & Trust Score Panel -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 20px;">
+                <!-- Platform Score Card -->
+                <div class="card" style="padding: 20px; border: 1px solid var(--border-color); border-radius: 12px; background: #ffffff; margin-bottom: 0;">
+                    <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                        📈 درجة موثوقية الحساب في المنصة
+                    </h3>
+                    <div style="margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.95rem; font-weight: 700; color: var(--primary); margin-bottom: 8px;">
+                            <span>درجة الموثوقية (Platform Score)</span>
+                            <span><?= (int)($provider['platform_score'] ?? 0) ?>/100</span>
+                        </div>
+                        <div style="background-color: #e5e7eb; height: 16px; border-radius: 8px; overflow: hidden; width: 100%;">
+                            <div style="background: linear-gradient(90deg, var(--primary), #10b981); height: 100%; width: <?= (int)($provider['platform_score'] ?? 0) ?>%; transition: width 0.3s ease;"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Missing Trust Items Checklist -->
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                        <strong style="color: var(--text-primary); display: block; margin-bottom: 8px;">📋 نقاط زيادة درجة الموثوقية:</strong>
+                        <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 6px;">
+                            <?php
+                            $scoreDetails = [
+                                'description_ar' => ['name' => 'وصف تفصيلي للملف الشخصي (>10 أحرف)', 'points' => 20, 'check' => !empty($provider['description_ar']) && mb_strlen(trim($provider['description_ar'])) > 10],
+                                'logo' => ['name' => 'صورة الملف الشخصي/الشعار', 'points' => 15, 'check' => !empty($provider['logo'])],
+                                'work_photos' => ['name' => 'أعمال في معرض الصور', 'points' => 15, 'check' => !empty($provider['work_photos'])],
+                                'phone' => ['name' => 'رقم الهاتف الأساسي', 'points' => 5, 'check' => !empty($provider['phone'])],
+                                'whatsapp' => ['name' => 'رقم الواتساب للتواصل السريع', 'points' => 5, 'check' => !empty($provider['whatsapp'])],
+                                'email' => ['name' => 'البريد الإلكتروني المعتمد', 'points' => 5, 'check' => !empty($provider['email'])],
+                                'verified' => ['name' => 'التوثيق بالوثائق الرسمية للفريد/الشركة', 'points' => 25, 'check' => ($provider['verification_status'] ?? 'unverified') === 'verified'],
+                            ];
+                            foreach ($scoreDetails as $k => $itemDetails):
+                            ?>
+                                <li style="display: flex; align-items: center; gap: 8px; text-decoration: <?= $itemDetails['check'] ? 'line-through' : 'none' ?>; opacity: <?= $itemDetails['check'] ? 0.6 : 1 ?>;">
+                                    <span><?= $itemDetails['check'] ? '✅' : '❌' ?></span>
+                                    <span><?= e($itemDetails['name']) ?> (<?= $itemDetails['points'] ?>+)</span>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Verification Document Upload/Status Card -->
+                <div class="card" style="padding: 20px; border: 1px solid var(--border-color); border-radius: 12px; background: #ffffff; margin-bottom: 0;">
+                    <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                        🛡️ توثيق الحساب والوثائق الثبوتية
+                    </h3>
+                    
+                    <?php 
+                    $vStatus = $provider['verification_status'] ?? 'unverified';
+                    if ($vStatus === 'verified'): 
+                    ?>
+                        <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 8px; text-align: center;">
+                            <span style="font-size: 2rem; display: block; margin-bottom: 5px;">✅</span>
+                            <strong style="color: #15803d; display: block; margin-bottom: 4px;">حساب موثق رسمياً</strong>
+                            <span style="font-size: 0.85rem; color: #166534;">تم تدقيق الوثائق بنجاح وشارة التوثيق فعالة الآن على ملفك الشخصي.</span>
+                        </div>
+                    <?php elseif (in_array($vStatus, ['documents_uploaded', 'pending_review', 'resubmitted'])): ?>
+                        <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; padding: 15px; border-radius: 8px; text-align: center;">
+                            <span style="font-size: 2rem; display: block; margin-bottom: 5px;">⏳</span>
+                            <strong style="color: #1d4ed8; display: block; margin-bottom: 4px;">الوثائق قيد التدقيق الإداري</strong>
+                            <span style="font-size: 0.85rem; color: #1e40af;">لقد قمت برفع وثائقك المهنية وهي معروضة حالياً على مراجعي المنصة لاعتمادها.</span>
+                        </div>
+                    <?php else: ?>
+                        <!-- Unverified / Rejected status -->
+                        <?php if ($vStatus === 'rejected'): ?>
+                            <div style="background-color: #fef2f2; border: 1px solid #fecaca; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; color: #991b1b;">
+                                <strong style="display: block; margin-bottom: 4px;">❌ تم رفض طلب التوثيق السابق</strong>
+                                <span>السبب: <?= e($provider['verification_rejection_reason'] ?: 'الملف المرفوع غير واضح أو غير مطابق للبيانات.') ?></span>
+                            </div>
+                        <?php endif; ?>
+
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 15px;">
+                            يتيح لك توثيق الحساب الحصول على شارة التوثيق الزرقاء ويزيد ترتيبك ونسبة نقر العملاء على أرقامك.
+                        </p>
+
+                        <form action="<?= url('provider/verify') ?>" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 10px;">
+                            <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                            <div>
+                                <label style="font-size: 0.85rem; font-weight: bold; display: block; margin-bottom: 6px;">
+                                    <?php if ($provider['business_type'] === 'company'): ?>
+                                        📄 السجل التجاري / رخصة ممارسة المهنة للشركة:
+                                    <?php else: ?>
+                                        📄 صورة الهوية الشخصية (الوجهين) أو جواز السفر:
+                                    <?php endif; ?>
+                                </label>
+                                <input type="file" name="verification_document" accept=".jpg,.jpeg,.png,.pdf" required style="font-size: 0.85rem; width: 100%; padding: 6px; border: 1px solid var(--border-color); border-radius: 6px; background-color: #f8fafc;">
+                                <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 4px;">الأنواع المسموحة: JPG, PNG, PDF. الحد الأقصى للحجم: 5 ميجابايت.</span>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm" style="font-weight: 700; width: 100%; margin-top: 5px;">
+                                📤 إرسال طلب التوثيق للمراجعة
+                            </button>
+                        </form>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -230,7 +334,7 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
                         <?php foreach ($reviews as $rev): ?>
                             <div style="border-bottom: 1px solid #f3f4f6; padding-bottom: 15px; text-align: right;">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                                    <strong style="color: var(--text-primary); font-size: 0.95rem;"><?= e($rev['name']) ?></strong>
+                                    <strong style="color: var(--text-primary); font-size: 0.95rem;"><?= e($rev['reviewer_name']) ?></strong>
                                     <span style="color: #fbbf24; font-size: 0.9rem; font-weight: 700;">
                                         <?= str_repeat('★', (int)$rev['rating']) ?><span style="color: #e5e7eb;"><?= str_repeat('★', 5 - (int)$rev['rating']) ?></span>
                                     </span>

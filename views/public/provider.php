@@ -147,9 +147,13 @@ echo json_ld_local_business($schemaData);
                         <span style="font-size: 0.9rem; color: var(--text-secondary);">يغطي جميع مناطق مدينة <?= e($provider['city_name']) ?></span>
                     <?php else: ?>
                         <?php foreach ($areasCovered as $ar): ?>
-                            <span style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">
-                                <?= e($ar['display_name_ar']) ?>
-                            </span>
+                            <?php
+                            echo App\Core\View::render('components/AreaChip', [
+                                'area_name' => $ar['display_name_ar'],
+                                'city_slug' => $provider['city_slug'],
+                                'area_slug' => $ar['slug']
+                            ]);
+                            ?>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
@@ -159,9 +163,13 @@ echo json_ld_local_business($schemaData);
                     <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-top: 20px; margin-bottom: 10px;">🛠️ خدمات إضافية وتخصصات</h3>
                     <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                         <?php foreach ($secondaryServices as $ss): ?>
-                            <span style="background-color: #fbf5f3; border: 1px solid #f2e2dd; color: var(--accent-primary); padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">
-                                <?= e($ss['display_name_ar']) ?>
-                            </span>
+                            <?php
+                            echo App\Core\View::render('components/ServiceChip', [
+                                'service_slug' => $ss['slug'],
+                                'service_name' => $ss['display_name_ar'],
+                                'city_slug' => $provider['city_slug']
+                            ]);
+                            ?>
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>

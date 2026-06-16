@@ -68,7 +68,18 @@ $router->post('/api/contact', [App\Controllers\ProviderController::class, 'track
 $router->get('/admin/login', [App\Controllers\Admin\AuthController::class, 'showLogin'], [App\Middleware\AdminGuest::class]);
 $router->post('/admin/login', [App\Controllers\Admin\AuthController::class, 'login'], [App\Middleware\AdminGuest::class]);
 $router->post('/admin/logout', [App\Controllers\Admin\AuthController::class, 'logout'], [App\Middleware\AdminAuth::class]);
+
+// Admin Dashboard
 $router->get('/admin/dashboard', [App\Controllers\Admin\DashboardController::class, 'index'], [App\Middleware\AdminAuth::class]);
+$router->get('/admin/reviews', [App\Controllers\Admin\DashboardController::class, 'reviews'], [App\Middleware\AdminAuth::class]);
+$router->post('/admin/reviews/{id}/approve', [App\Controllers\Admin\DashboardController::class, 'approveReview'], [App\Middleware\AdminAuth::class]);
+$router->post('/admin/reviews/{id}/reject', [App\Controllers\Admin\DashboardController::class, 'rejectReview'], [App\Middleware\AdminAuth::class]);
+$router->post('/admin/reviews/{id}/delete', [App\Controllers\Admin\DashboardController::class, 'deleteReview'], [App\Middleware\AdminAuth::class]);
+
+$router->get('/admin/verification', [App\Controllers\Admin\DashboardController::class, 'verificationRequests'], [App\Middleware\AdminAuth::class]);
+$router->post('/admin/verification/{id}/approve', [App\Controllers\Admin\DashboardController::class, 'approveVerification'], [App\Middleware\AdminAuth::class]);
+$router->post('/admin/verification/{id}/reject', [App\Controllers\Admin\DashboardController::class, 'rejectVerification'], [App\Middleware\AdminAuth::class]);
+$router->get('/admin/verification/preview/{filename}', [App\Controllers\Admin\DashboardController::class, 'previewDocument'], [App\Middleware\AdminAuth::class]);
 
 // Admin Productivity Tools
 $router->get('/admin/productivity/quality', [App\Controllers\Admin\ProductivityController::class, 'qualityReport'], [App\Middleware\AdminAuth::class]);
@@ -87,11 +98,13 @@ $router->post('/provider/auth/google/stub', [App\Controllers\Provider\AuthContro
 $router->post('/provider/logout', [App\Controllers\Provider\AuthController::class, 'logout'], [App\Middleware\ProviderAuth::class]);
 
 $router->get('/provider/dashboard', [App\Controllers\Provider\DashboardController::class, 'index'], [App\Middleware\ProviderAuth::class]);
+$router->post('/provider/verify', [App\Controllers\Provider\DashboardController::class, 'uploadVerification'], [App\Middleware\ProviderAuth::class]);
 $router->get('/provider/wizard', [App\Controllers\Provider\WizardController::class, 'index'], [App\Middleware\ProviderAuth::class]);
 $router->post('/provider/wizard/save', [App\Controllers\Provider\WizardController::class, 'saveStep'], [App\Middleware\ProviderAuth::class]);
 $router->post('/provider/wizard/submit', [App\Controllers\Provider\WizardController::class, 'submitReview'], [App\Middleware\ProviderAuth::class]);
 
 // Wildcard route for provider public profile - must be after static /provider/ routes
+$router->post('/provider/{slug}/review', [App\Controllers\ReviewController::class, 'submit']);
 $router->get('/provider/{slug}', [App\Controllers\ProviderController::class, 'show']);
 
 // Services CRUD Module

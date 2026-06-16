@@ -162,4 +162,98 @@ class DashboardController extends Controller
             'contactCount' => $contactCount
         ]);
     }
+
+    /**
+     * Handle verification document upload.
+     */
+    public function uploadVerification(Request $request): Response
+    {
+        $accountId = Session::get('provider_account_id');
+        $account = $this->accountRepo->find($accountId);
+        if (!$account || !$account['provider_id']) {
+            \App\Core\Flash::error('يجب تأسيس الملف الشخصي أولاً قبل طلب التوثيق.');
+            return Response::redirect('/provider/dashboard');
+        }
+
+        try {
+            $this->validateCsrf($request);
+        } catch (\RuntimeException $e) {
+            \App\Core\Flash::error('خطأ في حماية الجلسة (CSRF). يرجى المحاولة مرة أخرى.');
+            return Response::redirect('/provider/dashboard');
+        }
+
+        $file = $request->file('verification_document');
+        if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
+            \App\Core\Flash::error('يرجى اختيار ملف صحيح للرفع.');
+            return Response::redirect('/provider/dashboard');
+        }
+
+        // Validate type (jpg, png, pdf)
+        $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+        $fileType = $file['type'];
+        if (!in_array($fileType, $allowedTypes)) {
+            \App\Core\Flash::error('نوع الملف غير مسموح. المسموح فقط: JPG, PNG, PDF.');
+            return Response::redirect('/provider/dashboard');
+        }
+
+        // Validate size (5MB max)
+        $maxSize = 5 * 1024 * 1024;
+        if ($file['size'] > $maxSize) {
+            \App\Core\Flash::error('حجم الملف كبير جداً. الحد الأقصى هو 5 ميجابايت.');
+            return Response::redirect('/provider/dashboard');
+        }
+
+        // Ensure target directory exists
+        $uploadDir = dirname(dirname(dirname(dirname(__DIR__)))) . '/storage/secure_uploads/verification';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        // Generate a secure, non-guessable filename
+        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+        $filename = 'verif_' . $account['provider_id'] . '_' . bin2hex(random_bytes(16)) . '.' . $ext;
+        $targetPath = $uploadDir . '/' . $filename;
+
+        if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
+            \App\Core\Flash::error('خطأ أثناء حفظ الملف. يرجى المحاولة لاحقاً.');
+            return Response::redirect('/provider/dashboard');
+        }
+
+        // Update provider verification status and document path
+        $db = \App\Core\Database::getInstance();
+        $provider = $this->providerRepo->find($account['provider_id']);
+        
+        $newStatus = ($provider['verification_status'] === 'rejected') ? 'resubmitted' : 'documents_uploaded';
+
+        $db->execute(
+            "UPDATE `providers` SET 
+                `verification_status` = :status, 
+                `verification_document_path` = :doc_path,
+                `verification_rejection_reason` = NULL 
+             WHERE `id` = :pid",
+            [
+                'status' => $newStatus,
+                'doc_path' => $filename,
+                'pid' => $account['provider_id']
+            ]
+        );
+
+        // Update platform score & aggregates!
+        $aggregationService = new \App\Services\ReviewAggregationService();
+        $aggregationService->recalculateProviderStats($account['provider_id']);
+
+        // Log Audit Event
+        $ipAddress = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+        $db->execute(
+            "INSERT INTO `audit_logs` (`admin_user_id`, `action`, `entity_type`, `entity_id`, `ip_hash`) 
+             VALUES (NULL, 'upload_verification_document', 'providers', :entity_id, :ip)",
+            [
+                'entity_id' => $account['provider_id'],
+                'ip' => hash('sha256', $ipAddress)
+            ]
+        );
+
+        \App\Core\Flash::success('تم رفع وثيقة التوثيق بنجاح وهي قيد المراجعة الإدارية الآن.');
+        return Response::redirect('/provider/dashboard');
+    }
 }

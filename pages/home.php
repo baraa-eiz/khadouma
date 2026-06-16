@@ -91,7 +91,7 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
     <h2 class="section-title">تصفح الخدمات المتوفرة</h2>
     <div class="grid grid-5" style="margin-top: 30px;">
         <?php foreach ($services as $srv): ?>
-            <a href="<?= base_url('search?service=' . $srv['slug']) ?>" class="card service-card">
+            <a href="<?= base_url('services/' . $srv['slug']) ?>" class="card service-card">
                 <div class="service-icon">
                     <?php
                     $icon = '🛠️';
@@ -118,34 +118,30 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
         <?php else: ?>
             <?php foreach ($latestProviders as $p): ?>
                 <div class="card provider-card" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
-                    <div>
+                    <?php
+                    $cardContent = '
                         <div class="provider-header" style="display: flex; gap: 15px; margin-bottom: 15px;">
                             <div class="provider-img-wrapper" style="width: 60px; height: 60px; border-radius: 50%; overflow: hidden; border: 2px solid var(--border-color); flex-shrink: 0;">
-                                <img src="<?= get_provider_image($p['profile_image'] ?? null, 60, 60, '👨‍🔧') ?>" alt="صورة <?= e($p['display_name_ar']) ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                                <img src="' . get_provider_image($p['profile_image'] ?? null, 60, 60, '👨‍🔧') . '" alt="صورة ' . e($p['display_name_ar']) . '" style="width: 100%; height: 100%; object-fit: cover;">
                             </div>
                             <div class="provider-info-header" style="display: flex; flex-direction: column; justify-content: center;">
-                                <h3 class="provider-name" style="font-size: 1.1rem; font-weight: 700; margin: 0;">
-                                    <a href="<?= base_url('provider/' . $p['slug']) ?>" style="color: var(--text-primary);"><?= e($p['display_name_ar']) ?></a>
-                                </h3>
-                                <span class="provider-service-tag" style="font-size: 0.8rem; font-weight: 700; color: var(--accent-primary); background-color: #fdf2ee; padding: 2px 8px; border-radius: 4px; align-self: flex-start; margin-top: 4px;">
-                                    <?= e($p['service_name']) ?>
-                                </span>
+                                <h3 class="provider-name" style="font-size: 1.1rem; font-weight: 700; margin: 0; color: var(--text-primary); text-align: right;">' . e($p['display_name_ar']) . '</h3>
+                                <span class="provider-service-tag" style="font-size: 0.8rem; font-weight: 700; color: var(--accent-primary); background-color: #fdf2ee; padding: 2px 8px; border-radius: 4px; align-self: flex-start; margin-top: 4px;">' . e($p['service_name']) . '</span>
                             </div>
                         </div>
                         
                         <div class="provider-badges" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;">
-                            <?php if ($p['verified']): ?>
-                                <span class="badge-tag badge-verified" style="font-size: 0.75rem; background-color: #eef7f0; color: var(--success-color); border: 1px solid #d9eedf; padding: 2px 8px; border-radius: 12px; font-weight: 600;">موثق</span>
-                            <?php endif; ?>
-                            <?php if ($p['years_experience'] > 0): ?>
-                                <span class="badge-tag badge-exp" style="font-size: 0.75rem; background-color: #fcf6e8; color: #a8761e; border: 1px solid #f6eacf; padding: 2px 8px; border-radius: 12px; font-weight: 600;">خبرة <?= (int)$p['years_experience'] ?> سنة</span>
-                            <?php endif; ?>
+                            ' . ($p['verified'] ? '<span class="badge-tag badge-verified" style="font-size: 0.75rem; background-color: #eef7f0; color: var(--success-color); border: 1px solid #d9eedf; padding: 2px 8px; border-radius: 12px; font-weight: 600;">موثق</span>' : '') . '
+                            ' . ($p['years_experience'] > 0 ? '<span class="badge-tag badge-exp" style="font-size: 0.75rem; background-color: #fcf6e8; color: #a8761e; border: 1px solid #f6eacf; padding: 2px 8px; border-radius: 12px; font-weight: 600;">خبرة ' . (int)$p['years_experience'] . ' سنة</span>' : '') . '
                         </div>
                         
-                        <p class="provider-desc-text" style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; height: 2.6rem;">
-                            <?= e($p['short_description_ar']) ?>
-                        </p>
-                    </div>
+                        <p class="provider-desc-text" style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; height: 2.6rem; text-align: right;">' . e($p['short_description_ar']) . '</p>
+                    ';
+                    echo App\Core\View::render('components/ClickableCard', [
+                        'href' => base_url('provider/' . $p['slug']),
+                        'content' => $cardContent
+                    ]);
+                    ?>
                     
                     <div>
                         <div class="provider-meta" style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 10px; margin-bottom: 15px; font-size: 0.85rem; color: var(--text-secondary);">

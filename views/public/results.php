@@ -130,12 +130,15 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
                         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                             <?php 
                             $suggestedServices = array_slice($services, 0, 6);
-                            foreach ($suggestedServices as $srv): 
+                            foreach ($suggestedServices as $srv) {
+                                echo App\Core\View::render('components/ServiceChip', [
+                                    'service_slug' => $srv['slug'],
+                                    'service_name' => $srv['display_name_ar'],
+                                    'city_slug' => $selectedCity ? $selectedCity['slug'] : '',
+                                    'style' => 'padding: 8px 14px; font-size: 13px;'
+                                ]);
+                            }
                             ?>
-                                <a href="<?= base_url('search?service=' . $srv['slug'] . ($selectedCity ? '&city=' . $selectedCity['slug'] : '')) ?>" class="badge badge-secondary" style="padding: 8px 14px; font-size: 13px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary); text-decoration: none; border-radius: 20px; transition: all 0.2s ease;">
-                                    <?= e($srv['display_name_ar']) ?>
-                                </a>
-                            <?php endforeach; ?>
                         </div>
                     </div>
 
@@ -145,9 +148,10 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
                             <?php 
                             $suggestedCities = array_slice($cities, 0, 6);
                             foreach ($suggestedCities as $cty): 
+                                $link = $selectedService ? base_url($cty['slug'] . '/' . $selectedService['slug']) : base_url('cities/' . $cty['slug']);
                             ?>
-                                <a href="<?= base_url('search?city=' . $cty['slug'] . ($selectedService ? '&service=' . $selectedService['slug'] : '')) ?>" class="badge badge-secondary" style="padding: 8px 14px; font-size: 13px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary); text-decoration: none; border-radius: 20px; transition: all 0.2s ease;">
-                                    <?= e($cty['display_name_ar']) ?>
+                                <a href="<?= $link ?>" class="badge badge-secondary" style="padding: 8px 14px; font-size: 13px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary); text-decoration: none; border-radius: 20px; transition: all 0.2s ease;">
+                                    📍 <?= e($cty['display_name_ar']) ?>
                                 </a>
                             <?php endforeach; ?>
                         </div>
@@ -162,40 +166,37 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
                 <div class="results-grid">
                     <?php foreach ($providers as $prov): ?>
                         <article class="card provider-card">
-                            <div>
-                                <!-- Provider Header -->
+                            <?php
+                            $cardContent = '
                                 <div class="provider-header" style="display: flex; gap: 15px; margin-bottom: 15px;">
                                     <div class="provider-img-wrapper" style="width: 60px; height: 60px; border-radius: 50%; overflow: hidden; border: 2px solid var(--border-color); flex-shrink: 0;">
-                                        <img src="<?= get_provider_image($prov['profile_image'] ?? null, 60, 60, '👨‍🔧') ?>" alt="صورة <?= e($prov['display_name_ar']) ?>" style="width:100%; height:100%; object-fit:cover;">
+                                        <img src="' . get_provider_image($prov['profile_image'] ?? null, 60, 60, '👨‍🔧') . '" alt="صورة ' . e($prov['display_name_ar']) . '" style="width:100%; height:100%; object-fit:cover;">
                                     </div>
                                     <div class="provider-info-header" style="display: flex; flex-direction: column; justify-content: center;">
-                                        <h3 class="provider-name" style="font-size: 1.1rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                                            <a href="<?= base_url('provider/' . $prov['slug']) ?>" style="color: var(--text-primary);"><?= e($prov['display_name_ar']) ?></a>
-                                            <?php if ($prov['verified']): ?>
-                                                <span class="badge-tag badge-verified" style="font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; line-height: 1;">موثق</span>
-                                            <?php endif; ?>
+                                        <h3 class="provider-name" style="font-size: 1.1rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; text-align: right; color: var(--text-primary);">
+                                            ' . e($prov['display_name_ar']) . '
+                                            ' . ($prov['verified'] ? '<span class="badge-tag badge-verified" style="font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; line-height: 1; background-color: #eef7f0; color: var(--success-color);">موثق</span>' : '') . '
                                         </h3>
                                         <span class="provider-service-tag" style="font-size: 0.8rem; font-weight: 700; color: var(--accent-primary); background-color: #fdf2ee; padding: 2px 8px; border-radius: 4px; align-self: flex-start; margin-top: 4px;">
-                                            <?= e($prov['service_name']) ?>
+                                            ' . e($prov['service_name']) . '
                                         </span>
                                     </div>
                                 </div>
 
-                                <!-- Badges & Experience -->
                                 <div class="provider-badges" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;">
-                                    <?php if ($prov['verified']): ?>
-                                        <span class="badge-tag badge-verified" style="font-size: 0.75rem; background-color: #eef7f0; color: var(--success-color); border: 1px solid #d9eedf; padding: 2px 8px; border-radius: 12px; font-weight: 600;">موثق</span>
-                                    <?php endif; ?>
-                                    <?php if ($prov['years_experience'] > 0): ?>
-                                        <span class="badge-tag badge-exp" style="font-size: 0.75rem; background-color: #fcf6e8; color: #a8761e; border: 1px solid #f6eacf; padding: 2px 8px; border-radius: 12px; font-weight: 600;">خبرة <?= (int)$prov['years_experience'] ?> سنة</span>
-                                    <?php endif; ?>
+                                    ' . ($prov['verified'] ? '<span class="badge-tag badge-verified" style="font-size: 0.75rem; background-color: #eef7f0; color: var(--success-color); border: 1px solid #d9eedf; padding: 2px 8px; border-radius: 12px; font-weight: 600;">موثق</span>' : '') . '
+                                    ' . ($prov['years_experience'] > 0 ? '<span class="badge-tag badge-exp" style="font-size: 0.75rem; background-color: #fcf6e8; color: #a8761e; border: 1px solid #f6eacf; padding: 2px 8px; border-radius: 12px; font-weight: 600;">خبرة ' . (int)$prov['years_experience'] . ' سنة</span>' : '') . '
                                 </div>
 
-                                <!-- Description -->
-                                <p class="provider-desc-text" style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; height: 2.6rem;">
-                                    <?= e($prov['short_description_ar']) ?>
+                                <p class="provider-desc-text" style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; height: 2.6rem; text-align: right;">
+                                    ' . e($prov['short_description_ar']) . '
                                 </p>
-                            </div>
+                            ';
+                            echo App\Core\View::render('components/ClickableCard', [
+                                'href' => base_url('provider/' . $prov['slug']),
+                                'content' => $cardContent
+                            ]);
+                            ?>
 
                             <div>
                                 <!-- Price, Rating, Location Meta -->

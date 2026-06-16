@@ -20,12 +20,13 @@ $citySlug = isset($currentCity) ? $currentCity['slug'] : null;
     <div class="services-link-grid" style="display: flex; flex-wrap: wrap; gap: 10px;">
         <?php foreach ($services as $srv): 
             if (isset($currentService) && $srv['slug'] === $currentService['slug']) continue;
-            $link = $citySlug ? base_url($citySlug . '/' . $srv['slug']) : base_url('services/' . $srv['slug']);
-        ?>
-            <a href="<?= $link ?>" class="badge-link" style="background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; text-decoration: none;">
-                <?= e($srv['short_name_ar']) ?>
-            </a>
-        <?php endforeach; ?>
+            echo App\Core\View::render('components/ServiceChip', [
+                'service_slug' => $srv['slug'],
+                'service_name' => $srv['short_name_ar'],
+                'city_slug' => $citySlug,
+                'style' => 'padding: 8px 16px; font-size: 0.9rem;'
+            ]);
+        endforeach; ?>
     </div>
 </div>
 <?php endif; ?>

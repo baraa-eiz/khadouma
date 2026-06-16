@@ -191,6 +191,26 @@
                         <span class="badge badge-secondary" style="opacity: 0.6;">غير موثق</span>
                     <?php endif; ?>
                 </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 13px; color: var(--text-muted);">حالة التوثيق التفصيلية:</span>
+                    <span class="badge badge-secondary"><?= e($item['verification_status'] ?? 'unverified') ?></span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 13px; color: var(--text-muted);">درجة موثوقية المنصة:</span>
+                    <strong style="color: var(--primary);"><?= (int)($item['platform_score'] ?? 0) ?>/100</strong>
+                </div>
+                <?php if (!empty($item['verification_document_path'])): ?>
+                    <div style="border-top: 1px solid var(--border-color); padding-top: 8px; margin-top: 4px;">
+                        <a href="<?= url('admin/verification/preview/' . $item['verification_document_path']) ?>" target="_blank" class="btn btn-outline-primary btn-sm" style="font-size: 11px; width: 100%; text-align: center; display: block; text-decoration: none;">
+                            📄 عرض وثيقة التوثيق المرفوعة
+                        </a>
+                    </div>
+                <?php endif; ?>
+                <?php if (!empty($item['verification_rejection_reason'])): ?>
+                    <div style="font-size: 11px; color: var(--danger); background-color: #fef2f2; border: 1px solid #fee2e2; padding: 6px; border-radius: 4px; margin-top: 4px;">
+                        <strong>سبب الرفض:</strong> <?= e($item['verification_rejection_reason']) ?>
+                    </div>
+                <?php endif; ?>
                 <?php if ($item['deleted_at']): ?>
                     <div style="border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 4px; color: var(--danger); font-size: 12px; font-weight: bold; text-align: center;">
                         هذا الحساب محذوف مؤقتاً منذ: <?= date('Y-m-d H:i', strtotime($item['deleted_at'])) ?>

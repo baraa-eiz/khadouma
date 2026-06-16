@@ -49,6 +49,13 @@ return [
         'active_pattern' => '/admin/providers/drafts*'
     ],
     [
+        'key' => 'verification',
+        'label' => 'توثيق الحسابات',
+        'icon' => 'shield',
+        'url' => '/admin/verification',
+        'active_pattern' => '/admin/verification*'
+    ],
+    [
         'key' => 'productivity',
         'label' => 'أدوات الإنتاجية',
         'icon' => 'zap',
@@ -59,7 +66,7 @@ return [
         'key' => 'reviews',
         'label' => 'التقييمات',
         'icon' => 'star',
-        'url' => '#',
+        'url' => '/admin/reviews',
         'active_pattern' => '/admin/reviews*'
     ],
     [
