@@ -146,7 +146,7 @@
                                     </td>
                                     <td style="font-size: 12px; font-family: monospace; direction: ltr; text-align: right;"><?= e($log['ip_address']) ?></td>
                                 </tr>
-                            <?php endphp ?>
+                            <?php endforeach; ?>
                         </tbody>
                     </table>
                 <?php endif; ?>

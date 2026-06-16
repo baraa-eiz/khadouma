@@ -171,6 +171,9 @@ CREATE TABLE `providers` (
   `is_featured` TINYINT(1) NOT NULL DEFAULT 0,
   `sort_weight` INT NOT NULL DEFAULT 0, -- Higher weight means shows up higher in lists
   `status` VARCHAR(50) NOT NULL DEFAULT 'pending', -- 'pending', 'approved', 'rejected', 'suspended'
+  `website` VARCHAR(255) NULL,
+  `working_hours` VARCHAR(255) NULL,
+  `social_links` TEXT NULL, -- JSON string for social accounts
   `notes_internal` TEXT NULL, -- Internal notes visible to admins only
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -397,4 +400,59 @@ CREATE TABLE `audit_logs` (
   FOREIGN KEY (`admin_user_id`) REFERENCES `admin_users` (`id`) ON DELETE SET NULL,
   INDEX `idx_audit_admin` (`admin_user_id`),
   INDEX `idx_audit_created` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ------------------------------------------------------------
+-- 20. PROVIDER ACCOUNTS (Identity independent from business data)
+-- ------------------------------------------------------------
+CREATE TABLE `provider_accounts` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `email` VARCHAR(150) NOT NULL UNIQUE,
+  `google_id` VARCHAR(255) NULL,
+  `display_name` VARCHAR(150) NOT NULL,
+  `avatar_url` VARCHAR(255) NULL,
+  `provider_id` INT NULL, -- NULL until link to providers table is established
+  `status` VARCHAR(50) NOT NULL DEFAULT 'active', -- 'active', 'suspended'
+  `last_login_at` TIMESTAMP NULL DEFAULT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (`provider_id`) REFERENCES `providers` (`id`) ON DELETE SET NULL,
+  INDEX `idx_provider_account_email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ------------------------------------------------------------
+-- 21. PROVIDER DRAFTS (Drafts created by providers for review)
+-- ------------------------------------------------------------
+CREATE TABLE `provider_drafts` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `provider_id` INT NULL, -- NULL for new registrations
+  `provider_account_id` INT NOT NULL,
+  `display_name_ar` VARCHAR(200) NULL,
+  `slug` VARCHAR(150) NULL,
+  `business_type` VARCHAR(50) NULL DEFAULT 'individual',
+  `phone` VARCHAR(30) NULL,
+  `whatsapp` VARCHAR(30) NULL,
+  `email` VARCHAR(150) NULL,
+  `city_id` INT NULL,
+  `primary_service_id` INT NULL,
+  `short_description_ar` VARCHAR(255) NULL,
+  `description_ar` TEXT NULL,
+  `years_experience` INT NULL DEFAULT 0,
+  `starting_price` DECIMAL(10,2) NULL,
+  `price_unit` VARCHAR(50) NULL DEFAULT 'hour',
+  `website` VARCHAR(255) NULL,
+  `working_hours` VARCHAR(255) NULL,
+  `social_links` TEXT NULL, -- JSON formatted social URLs
+  `logo_path` VARCHAR(255) NULL,
+  `work_photos_json` TEXT NULL, -- JSON formatted array of paths
+  `secondary_services_json` TEXT NULL, -- JSON formatted array of service IDs
+  `coverage_areas_json` TEXT NULL, -- JSON formatted array of area IDs
+  `meta_title_ar` VARCHAR(255) NULL,
+  `meta_description_ar` TEXT NULL,
+  `status` VARCHAR(50) NOT NULL DEFAULT 'draft', -- 'draft', 'pending_review', 'approved', 'rejected'
+  `admin_notes` TEXT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (`provider_id`) REFERENCES `providers` (`id`) ON DELETE SET NULL,
+  FOREIGN KEY (`provider_account_id`) REFERENCES `provider_accounts` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -37,3 +37,6 @@ insert_carpentry.sql
 acceptance_review_report*
 implementation_plan*
 walkthrough*
+
+# SQLite Database
+database/db.sqlite

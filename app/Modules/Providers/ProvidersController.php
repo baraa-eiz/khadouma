@@ -13,6 +13,8 @@ use App\Core\Session;
 use App\Core\Flash;
 use App\Core\Database;
 use App\Repositories\ProviderRepository;
+use App\Repositories\ProviderDraftRepository;
+use App\Repositories\ProviderAccountRepository;
 
 class ProvidersController extends Controller
 {
@@ -66,6 +68,52 @@ class ProvidersController extends Controller
             $criteria['service_id'] = (int)$serviceId;
         }
 
+        // Advanced filters
+        $ratingMin = $request->query('rating_min');
+        if ($ratingMin !== null && $ratingMin !== '') {
+            $criteria['rating_min'] = (float)$ratingMin;
+        }
+        $ratingMax = $request->query('rating_max');
+        if ($ratingMax !== null && $ratingMax !== '') {
+            $criteria['rating_max'] = (float)$ratingMax;
+        }
+        $experienceMin = $request->query('experience_min');
+        if ($experienceMin !== null && $experienceMin !== '') {
+            $criteria['experience_min'] = (int)$experienceMin;
+        }
+        $experienceMax = $request->query('experience_max');
+        if ($experienceMax !== null && $experienceMax !== '') {
+            $criteria['experience_max'] = (int)$experienceMax;
+        }
+        $businessType = $request->query('business_type');
+        if ($businessType !== null && $businessType !== '') {
+            $criteria['business_type'] = trim($businessType);
+        }
+        $verified = $request->query('verified');
+        if ($verified !== null && $verified !== '') {
+            $criteria['verified'] = (int)$verified;
+        }
+        $phoneVerified = $request->query('phone_verified');
+        if ($phoneVerified !== null && $phoneVerified !== '') {
+            $criteria['phone_verified'] = (int)$phoneVerified;
+        }
+        $identityVerified = $request->query('identity_verified');
+        if ($identityVerified !== null && $identityVerified !== '') {
+            $criteria['identity_verified'] = (int)$identityVerified;
+        }
+        $isFeatured = $request->query('is_featured');
+        if ($isFeatured !== null && $isFeatured !== '') {
+            $criteria['is_featured'] = (int)$isFeatured;
+        }
+        $completionMin = $request->query('completion_min');
+        if ($completionMin !== null && $completionMin !== '') {
+            $criteria['completion_min'] = (int)$completionMin;
+        }
+        $completionMax = $request->query('completion_max');
+        if ($completionMax !== null && $completionMax !== '') {
+            $criteria['completion_max'] = (int)$completionMax;
+        }
+
         // Sorting params
         $sortBy = $request->query('sort_by', 'sort_weight');
         $sortDir = $request->query('sort_dir', 'DESC');
@@ -98,6 +146,17 @@ class ProvidersController extends Controller
             'status' => $status,
             'city_id' => $cityId,
             'service_id' => $serviceId,
+            'rating_min' => $ratingMin,
+            'rating_max' => $ratingMax,
+            'experience_min' => $experienceMin,
+            'experience_max' => $experienceMax,
+            'business_type' => $businessType,
+            'verified' => $verified,
+            'phone_verified' => $phoneVerified,
+            'identity_verified' => $identityVerified,
+            'is_featured' => $isFeatured,
+            'completion_min' => $completionMin,
+            'completion_max' => $completionMax,
             'sort_by' => $sortBy,
             'sort_dir' => $sortDir,
             'cities' => $cities,
@@ -472,6 +531,444 @@ class ProvidersController extends Controller
     }
 
     /**
+     * Handle bulk actions for selected providers.
+     */
+    public function bulkAction(Request $request): Response
+    {
+        $this->validateCsrf($request);
+        
+        $ids = $request->input('ids');
+        $action = $request->input('action');
+        
+        if (empty($ids) || !is_array($ids)) {
+            Flash::error('الرجاء تحديد مزود خدمة واحد على الأقل.');
+            $this->redirect('/admin/providers');
+            return new Response();
+        }
+        
+        $ids = array_map('intval', $ids);
+        $adminUserId = (int)Session::get('admin_user_id');
+        $ipAddress = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+        
+        $success = false;
+        $message = '';
+        
+        switch ($action) {
+            case 'approve':
+                $success = $this->repo->bulkUpdateStatus($ids, 'approved');
+                $message = 'تمت الموافقة على مزودي الخدمة المحددين.';
+                break;
+            case 'pending':
+                $success = $this->repo->bulkUpdateStatus($ids, 'pending');
+                $message = 'تم تغيير حالة مزودي الخدمة المحددين إلى قيد الانتظار.';
+                break;
+            case 'reject':
+                $success = $this->repo->bulkUpdateStatus($ids, 'rejected');
+                $message = 'تم رفض مزودي الخدمة المحددين.';
+                break;
+            case 'suspend':
+                $success = $this->repo->bulkUpdateStatus($ids, 'suspended');
+                $message = 'تم تعليق مزودي الخدمة المحددين.';
+                break;
+            case 'publish':
+                $success = $this->repo->bulkUpdateIsActive($ids, true);
+                $message = 'تم تفعيل/نشر مزودي الخدمة المحددين.';
+                break;
+            case 'hide':
+                $success = $this->repo->bulkUpdateIsActive($ids, false);
+                $message = 'تم إخفاء مزودي الخدمة المحددين.';
+                break;
+            case 'delete':
+                $success = $this->repo->bulkSoftDelete($ids);
+                $message = 'تم حذف مزودي الخدمة المحددين مؤقتاً.';
+                break;
+            case 'restore':
+                $success = $this->repo->bulkRestore($ids);
+                $message = 'تم استعادة مزودي الخدمة المحددين.';
+                break;
+            default:
+                Flash::error('إجراء غير صالح.');
+                $this->redirect('/admin/providers');
+                return new Response();
+        }
+        
+        if ($success) {
+            // Write to audit log for bulk action
+            $db = Database::getInstance();
+            $db->execute(
+                "INSERT INTO `audit_logs` (`admin_user_id`, `action`, `entity_type`, `new_value_json`, `ip_hash`) 
+                 VALUES (:admin_id, :action, 'providers', :val, :ip)",
+                [
+                    'admin_id' => $adminUserId,
+                    'action' => 'bulk_' . $action,
+                    'val' => json_encode(['affected_ids' => $ids]),
+                    'ip' => hash('sha256', $ipAddress)
+                ]
+            );
+            Flash::success($message);
+        } else {
+            Flash::error('فشل تنفيذ الإجراء الجماعي.');
+        }
+        
+        $this->redirect('/admin/providers');
+        return new Response();
+    }
+
+    /**
+     * Export matching providers as CSV.
+     */
+    public function export(Request $request): Response
+    {
+        $criteria = ['admin_mode' => true];
+        
+        // Match same filters as index
+        $keyword = $request->query('keyword');
+        if ($keyword !== null && trim($keyword) !== '') {
+            $criteria['keyword'] = trim($keyword);
+        }
+        $isActive = $request->query('is_active');
+        if ($isActive !== null && $isActive !== '') {
+            $criteria['is_active'] = (int)$isActive;
+        }
+        $isDeleted = $request->query('is_deleted');
+        if ($isDeleted !== null && $isDeleted !== '') {
+            $criteria['is_deleted'] = (int)$isDeleted;
+        }
+        $status = $request->query('status');
+        if ($status !== null && $status !== '') {
+            $criteria['status'] = trim($status);
+        }
+        $cityId = $request->query('city_id');
+        if ($cityId !== null && $cityId !== '') {
+            $criteria['city_id'] = (int)$cityId;
+        }
+        $serviceId = $request->query('service_id');
+        if ($serviceId !== null && $serviceId !== '') {
+            $criteria['service_id'] = (int)$serviceId;
+        }
+        $ratingMin = $request->query('rating_min');
+        if ($ratingMin !== null && $ratingMin !== '') {
+            $criteria['rating_min'] = (float)$ratingMin;
+        }
+        $ratingMax = $request->query('rating_max');
+        if ($ratingMax !== null && $ratingMax !== '') {
+            $criteria['rating_max'] = (float)$ratingMax;
+        }
+        $experienceMin = $request->query('experience_min');
+        if ($experienceMin !== null && $experienceMin !== '') {
+            $criteria['experience_min'] = (int)$experienceMin;
+        }
+        $experienceMax = $request->query('experience_max');
+        if ($experienceMax !== null && $experienceMax !== '') {
+            $criteria['experience_max'] = (int)$experienceMax;
+        }
+        $businessType = $request->query('business_type');
+        if ($businessType !== null && $businessType !== '') {
+            $criteria['business_type'] = trim($businessType);
+        }
+        $verified = $request->query('verified');
+        if ($verified !== null && $verified !== '') {
+            $criteria['verified'] = (int)$verified;
+        }
+        $phoneVerified = $request->query('phone_verified');
+        if ($phoneVerified !== null && $phoneVerified !== '') {
+            $criteria['phone_verified'] = (int)$phoneVerified;
+        }
+        $identityVerified = $request->query('identity_verified');
+        if ($identityVerified !== null && $identityVerified !== '') {
+            $criteria['identity_verified'] = (int)$identityVerified;
+        }
+        $isFeatured = $request->query('is_featured');
+        if ($isFeatured !== null && $isFeatured !== '') {
+            $criteria['is_featured'] = (int)$isFeatured;
+        }
+        $completionMin = $request->query('completion_min');
+        if ($completionMin !== null && $completionMin !== '') {
+            $criteria['completion_min'] = (int)$completionMin;
+        }
+        $completionMax = $request->query('completion_max');
+        if ($completionMax !== null && $completionMax !== '') {
+            $criteria['completion_max'] = (int)$completionMax;
+        }
+
+        $sortBy = $request->query('sort_by', 'sort_weight');
+        $sortDir = $request->query('sort_dir', 'DESC');
+
+        // Fetch up to 5000 records for export
+        $items = $this->service->searchProviders($criteria, $sortBy, $sortDir, 5000, 0);
+
+        // Build CSV content with UTF-8 BOM
+        $csvContent = "\xEF\xBB\xBF";
+        $out = fopen('php://temp', 'r+');
+        fputcsv($out, ['ID', 'الاسم', 'الهاتف', 'الواتساب', 'المدينة', 'الخدمة الأساسية', 'الحالة', 'نشط', 'التقييم', 'عدد التقييمات', 'سنوات الخبرة', 'السعر الأولي']);
+        foreach ($items as $item) {
+            fputcsv($out, [
+                $item['id'],
+                $item['display_name_ar'],
+                $item['phone'],
+                $item['whatsapp'],
+                $item['city_name'],
+                $item['service_name'],
+                $item['status'],
+                $item['is_active'] ? 'نعم' : 'لا',
+                $item['rating'],
+                $item['reviews_count'],
+                $item['years_experience'],
+                $item['starting_price']
+            ]);
+        }
+        rewind($out);
+        $csvContent .= stream_get_contents($out);
+        fclose($out);
+
+        $response = new Response();
+        $response->setHeader('Content-Type', 'text/csv; charset=UTF-8');
+        $response->setHeader('Content-Disposition', 'attachment; filename="providers_export_' . date('Y-m-d') . '.csv"');
+        $response->setContent($csvContent);
+        return $response;
+    }
+
+    /**
+     * Import providers from CSV.
+     */
+    public function import(Request $request): Response
+    {
+        $this->validateCsrf($request);
+
+        if (!isset($_FILES['csv_file']) || $_FILES['csv_file']['error'] !== UPLOAD_ERR_OK) {
+            Flash::error('الرجاء اختيار ملف CSV صالح.');
+            $this->redirect('/admin/providers');
+            return new Response();
+        }
+
+        $filePath = $_FILES['csv_file']['tmp_name'];
+        $handle = fopen($filePath, 'r');
+        if (!$handle) {
+            Flash::error('فشل في فتح ملف الـ CSV.');
+            $this->redirect('/admin/providers');
+            return new Response();
+        }
+
+        // Detect and skip UTF-8 BOM if present
+        $bom = fread($handle, 3);
+        if ($bom !== "\xEF\xBB\xBF") {
+            rewind($handle);
+        }
+
+        // Load mappings
+        $db = Database::getInstance();
+        $citiesDb = $db->fetchAll("SELECT id, display_name_ar FROM `cities` WHERE `is_deleted` = 0");
+        $servicesDb = $db->fetchAll("SELECT id, display_name_ar FROM `services` WHERE `is_deleted` = 0");
+
+        $citiesMap = [];
+        foreach ($citiesDb as $c) {
+            $citiesMap[normalize_arabic($c['display_name_ar'])] = (int)$c['id'];
+        }
+        $servicesMap = [];
+        foreach ($servicesDb as $s) {
+            $servicesMap[normalize_arabic($s['display_name_ar'])] = (int)$s['id'];
+        }
+
+        // Read headers
+        $headers = fgetcsv($handle);
+        if (!$headers) {
+            fclose($handle);
+            Flash::error('ملف CSV فارغ أو غير صالح.');
+            $this->redirect('/admin/providers');
+            return new Response();
+        }
+
+        // Map headers to fields
+        $headerMap = [];
+        foreach ($headers as $index => $header) {
+            $header = trim($header);
+            $normHeader = normalize_arabic($header);
+            
+            if ($header === 'ID' || $header === 'id' || $normHeader === 'الرقم') {
+                $headerMap['id'] = $index;
+            } elseif ($normHeader === 'الاسم' || $header === 'name') {
+                $headerMap['display_name_ar'] = $index;
+            } elseif ($normHeader === 'الهاتف' || $header === 'phone') {
+                $headerMap['phone'] = $index;
+            } elseif ($normHeader === 'الواتساب' || $header === 'whatsapp') {
+                $headerMap['whatsapp'] = $index;
+            } elseif ($normHeader === 'المدينه' || $normHeader === 'المدينة' || $header === 'city') {
+                $headerMap['city'] = $index;
+            } elseif ($normHeader === 'الخدمه اساسيه' || $normHeader === 'الخدمة الأساسية' || $header === 'service') {
+                $headerMap['service'] = $index;
+            } elseif ($normHeader === 'سنوات الخبره' || $normHeader === 'سنوات الخبرة' || $header === 'experience' || $header === 'years_experience') {
+                $headerMap['years_experience'] = $index;
+            } elseif ($normHeader === 'السعر الاولي' || $normHeader === 'السعر الأولي' || $header === 'starting_price') {
+                $headerMap['starting_price'] = $index;
+            } elseif ($normHeader === 'نوع العمل' || $header === 'business_type') {
+                $headerMap['business_type'] = $index;
+            } elseif ($normHeader === 'الحاله' || $normHeader === 'الحالة' || $header === 'status') {
+                $headerMap['status'] = $index;
+            } elseif ($normHeader === 'نشط' || $header === 'is_active') {
+                $headerMap['is_active'] = $index;
+            }
+        }
+
+        // Ensure required fields exist in header
+        if (!isset($headerMap['display_name_ar']) || !isset($headerMap['phone'])) {
+            fclose($handle);
+            Flash::error('الملف يجب أن يحتوي على عمودين على الأقل للاسم والهاتف.');
+            $this->redirect('/admin/providers');
+            return new Response();
+        }
+
+        $adminUserId = (int)Session::get('admin_user_id');
+        $ipAddress = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+
+        $imported = 0;
+        $updated = 0;
+        $errors = [];
+        $rowNum = 1;
+
+        while (($row = fgetcsv($handle)) !== false) {
+            $rowNum++;
+            
+            // Extract values using header map
+            $rawId = isset($headerMap['id']) && isset($row[$headerMap['id']]) ? trim($row[$headerMap['id']]) : null;
+            $rawName = isset($row[$headerMap['display_name_ar']]) ? trim($row[$headerMap['display_name_ar']]) : '';
+            $rawPhone = isset($row[$headerMap['phone']]) ? phone_format(trim($row[$headerMap['phone']])) : '';
+            $rawWhatsapp = isset($headerMap['whatsapp']) && isset($row[$headerMap['whatsapp']]) ? phone_format(trim($row[$headerMap['whatsapp']])) : null;
+            
+            $rawCityName = isset($headerMap['city']) && isset($row[$headerMap['city']]) ? trim($row[$headerMap['city']]) : '';
+            $rawServiceName = isset($headerMap['service']) && isset($row[$headerMap['service']]) ? trim($row[$headerMap['service']]) : '';
+            
+            $rawExp = isset($headerMap['years_experience']) && isset($row[$headerMap['years_experience']]) ? (int)$row[$headerMap['years_experience']] : 0;
+            $rawPrice = isset($headerMap['starting_price']) && isset($row[$headerMap['starting_price']]) && trim($row[$headerMap['starting_price']]) !== '' ? (float)$row[$headerMap['starting_price']] : null;
+            
+            $rawBusinessType = isset($headerMap['business_type']) && isset($row[$headerMap['business_type']]) ? trim($row[$headerMap['business_type']]) : 'individual';
+            if ($rawBusinessType === 'شركة' || $rawBusinessType === 'company') {
+                $rawBusinessType = 'company';
+            } else {
+                $rawBusinessType = 'individual';
+            }
+
+            $rawStatus = isset($headerMap['status']) && isset($row[$headerMap['status']]) ? trim($row[$headerMap['status']]) : 'approved';
+            if ($rawStatus === 'مقبول' || $rawStatus === 'approved' || $rawStatus === 'نشط') {
+                $rawStatus = 'approved';
+            } elseif ($rawStatus === 'معلق' || $rawStatus === 'pending') {
+                $rawStatus = 'pending';
+            } elseif ($rawStatus === 'مرفوض' || $rawStatus === 'rejected') {
+                $rawStatus = 'rejected';
+            } elseif ($rawStatus === 'معلق مؤقتا' || $rawStatus === 'suspended') {
+                $rawStatus = 'suspended';
+            }
+
+            $rawIsActive = 1;
+            if (isset($headerMap['is_active']) && isset($row[$headerMap['is_active']])) {
+                $actVal = trim($row[$headerMap['is_active']]);
+                if ($actVal === '0' || $actVal === 'لا' || strtolower($actVal) === 'false' || strtolower($actVal) === 'no') {
+                    $rawIsActive = 0;
+                }
+            }
+
+            // Map City and Service
+            $cityId = 0;
+            $serviceId = 0;
+            
+            $normCity = normalize_arabic($rawCityName);
+            if (isset($citiesMap[$normCity])) {
+                $cityId = $citiesMap[$normCity];
+            } else {
+                // If not found, use first city as default
+                $cityId = !empty($citiesMap) ? reset($citiesMap) : 0;
+            }
+
+            $normService = normalize_arabic($rawServiceName);
+            if (isset($servicesMap[$normService])) {
+                $serviceId = $servicesMap[$normService];
+            } else {
+                // If not found, use first service as default
+                $serviceId = !empty($servicesMap) ? reset($servicesMap) : 0;
+            }
+
+            if (empty($rawName) || empty($rawPhone)) {
+                $errors[] = "السطر {$rowNum}: الاسم والهاتف مطلوبان.";
+                continue;
+            }
+
+            // Find existing provider
+            $existing = null;
+            if ($rawId) {
+                $existing = $this->repo->find((int)$rawId);
+            }
+            if (!$existing && !empty($rawPhone)) {
+                $existingPhone = $db->fetch("SELECT * FROM `providers` WHERE `phone` = ? AND `deleted_at` IS NULL LIMIT 1", [$rawPhone]);
+                if ($existingPhone) {
+                    $existing = $this->repo->find((int)$existingPhone['id']);
+                }
+            }
+
+            // Prepare validation array
+            $slugVal = $existing ? $existing['slug'] : slugify($rawName);
+            $validationData = [
+                'display_name_ar' => $rawName,
+                'business_type' => $rawBusinessType,
+                'phone' => $rawPhone,
+                'whatsapp' => $rawWhatsapp,
+                'city_id' => $cityId,
+                'primary_service_id' => $serviceId,
+                'years_experience' => $rawExp,
+                'starting_price' => $rawPrice,
+                'price_unit' => $existing ? $existing['price_unit'] : 'hour',
+                'verified' => $existing ? $existing['verified'] : 0,
+                'is_active' => $rawIsActive,
+                'sort_weight' => $existing ? $existing['sort_weight'] : 0,
+                'status' => $rawStatus,
+                'slug' => $slugVal,
+                'areas' => $existing ? $existing['areas'] : [],
+                'services' => $existing ? $existing['services'] : [],
+                'logo' => $existing ? $existing['logo'] : null,
+                'work_photos' => $existing ? $existing['work_photos'] : [],
+                'meta_title_ar' => $existing ? $existing['meta_title_ar'] : null,
+                'meta_description_ar' => $existing ? $existing['meta_description_ar'] : null,
+            ];
+
+            [$valErrors, $dto] = $this->validation->validate($validationData, $existing ? (int)$existing['id'] : null);
+            if (!empty($valErrors)) {
+                $flatErrors = [];
+                foreach ($valErrors as $fieldErrors) {
+                    $flatErrors = array_merge($flatErrors, $fieldErrors);
+                }
+                $errors[] = "السطر {$rowNum} [{$rawName}]: " . implode(' ', $flatErrors);
+                continue;
+            }
+
+            try {
+                if ($existing) {
+                    $this->service->updateProvider((int)$existing['id'], $dto, $adminUserId, $ipAddress);
+                    $updated++;
+                } else {
+                    $this->service->createProvider($dto, $adminUserId, $ipAddress);
+                    $imported++;
+                }
+            } catch (\Throwable $e) {
+                $errors[] = "السطر {$rowNum} [{$rawName}]: خطأ أثناء حفظ البيانات: " . $e->getMessage();
+            }
+        }
+
+        fclose($handle);
+
+        $report = "تم الاستيراد بنجاح: إضافة {$imported} مزودين جدد، وتحديث {$updated} مزودين.";
+        if (!empty($errors)) {
+            $report .= " حدثت أخطاء في بعض السطور: \n" . implode("\n", array_slice($errors, 0, 10));
+            if (count($errors) > 10) {
+                $report .= "\n...وغيرها من الأخطاء (" . count($errors) . " إجمالاً)";
+            }
+            Flash::warning($report);
+        } else {
+            Flash::success($report);
+        }
+
+        $this->redirect('/admin/providers');
+        return new Response();
+    }
+
+    /**
      * Local view renderer helper.
      */
     private function renderView(string $view, array $data = []): string
@@ -484,5 +981,251 @@ class ProvidersController extends Controller
         ob_start();
         require $viewFile;
         return ob_get_clean();
+    }
+
+    /**
+     * List all provider drafts pending review.
+     */
+    public function listDrafts(Request $request): Response
+    {
+        $draftRepo = new ProviderDraftRepository();
+        $items = $draftRepo->getPendingDrafts();
+
+        $content = $this->renderView('drafts', [
+            'items' => $items
+        ]);
+
+        return $this->render('layouts/admin', [
+            'title' => 'مراجعة طلبات التسجيل والتعديل المعلقة',
+            'content' => $content,
+            'breadcrumbs' => [
+                ['label' => 'الرئيسية', 'url' => '/admin/dashboard'],
+                ['label' => 'إدارة مزودي الخدمات', 'url' => '/admin/providers'],
+                ['label' => 'طلبات المراجعة المعلقة']
+            ]
+        ]);
+    }
+
+    /**
+     * Compare draft profile against current live profile side-by-side.
+     */
+    public function compareDraft(Request $request, string $id): Response
+    {
+        $id = (int)$id;
+        $draftRepo = new ProviderDraftRepository();
+        $draft = $draftRepo->find($id);
+
+        if (!$draft || $draft['status'] !== 'pending_review') {
+            Flash::error('الطلب المحدد غير موجود أو غير معلق للمراجعة حالياً.');
+            $this->redirect('/admin/providers/drafts');
+            return new Response();
+        }
+
+        $liveProvider = null;
+        if ($draft['provider_id']) {
+            $liveProvider = $this->repo->find($draft['provider_id']);
+        }
+
+        // Fetch cities, services, and areas for full details translation
+        $db = Database::getInstance();
+        $citiesRaw = $db->fetchAll("SELECT id, display_name_ar FROM `cities` WHERE `is_deleted` = 0");
+        $servicesRaw = $db->fetchAll("SELECT id, display_name_ar FROM `services` WHERE `is_deleted` = 0");
+        $areasRaw = $db->fetchAll("SELECT id, display_name_ar FROM `areas` WHERE `is_deleted` = 0");
+
+        $cities = array_column($citiesRaw, 'display_name_ar', 'id');
+        $services = array_column($servicesRaw, 'display_name_ar', 'id');
+        $areas = array_column($areasRaw, 'display_name_ar', 'id');
+
+        $content = $this->renderView('compare', [
+            'draft' => $draft,
+            'liveProvider' => $liveProvider,
+            'cities' => $cities,
+            'services' => $services,
+            'areas' => $areas
+        ]);
+
+        return $this->render('layouts/admin', [
+            'title' => 'مقارنة المسودة مع الملف المنشور',
+            'content' => $content,
+            'breadcrumbs' => [
+                ['label' => 'الرئيسية', 'url' => '/admin/dashboard'],
+                ['label' => 'إدارة مزودي الخدمات', 'url' => '/admin/providers'],
+                ['label' => 'طلبات المراجعة المعلقة', 'url' => '/admin/providers/drafts'],
+                ['label' => 'مقارنة التغييرات']
+            ]
+        ]);
+    }
+
+    /**
+     * Approve and publish draft updates/registration.
+     */
+    public function approveDraft(Request $request, string $id): Response
+    {
+        $id = (int)$id;
+        try {
+            $this->validateCsrf($request);
+        } catch (\RuntimeException $e) {
+            Flash::error('خطأ في حماية الجلسة (CSRF). يرجى المحاولة مرة أخرى.');
+            $this->redirect("/admin/providers/drafts/{$id}/compare");
+            return new Response();
+        }
+
+        $draftRepo = new ProviderDraftRepository();
+        $accountRepo = new ProviderAccountRepository();
+        $draft = $draftRepo->find($id);
+
+        if (!$draft || $draft['status'] !== 'pending_review') {
+            Flash::error('الطلب المحدد غير معلق للمراجعة.');
+            $this->redirect('/admin/providers/drafts');
+            return new Response();
+        }
+
+        $liveProvider = null;
+        if ($draft['provider_id']) {
+            $liveProvider = $this->repo->find($draft['provider_id']);
+        }
+
+        // Map draft fields to provider update structure
+        $providerData = [
+            'slug' => $draft['slug'],
+            'display_name_ar' => $draft['display_name_ar'],
+            'business_type' => $draft['business_type'],
+            'phone' => $draft['phone'],
+            'whatsapp' => $draft['whatsapp'],
+            'city_id' => $draft['city_id'],
+            'primary_service_id' => $draft['primary_service_id'],
+            'short_description_ar' => $draft['short_description_ar'],
+            'description_ar' => $draft['description_ar'],
+            'years_experience' => $draft['years_experience'],
+            'starting_price' => $draft['starting_price'],
+            'price_unit' => $draft['price_unit'],
+            'verified' => $liveProvider ? $liveProvider['verified'] : 0,
+            'is_active' => 1,
+            'sort_weight' => $liveProvider ? $liveProvider['sort_weight'] : 0,
+            'status' => 'approved',
+            'website' => $draft['website'],
+            'working_hours' => $draft['working_hours'],
+            'social_links' => $draft['social_links'],
+            'areas' => $draft['coverage_areas_json'],
+            'services' => $draft['secondary_services_json'],
+            'logo' => $draft['logo_path'],
+            'work_photos' => $draft['work_photos_json'],
+            'meta_title_ar' => $draft['meta_title_ar'],
+            'meta_description_ar' => $draft['meta_description_ar'],
+        ];
+
+        $adminUserId = (int)Session::get('admin_user_id');
+        $ipAddress = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+
+        $db = Database::getInstance();
+
+        try {
+            if ($draft['provider_id']) {
+                // Update existing provider
+                $this->repo->update($draft['provider_id'], $providerData);
+                
+                // Set draft status as approved
+                $draft['status'] = 'approved';
+                $draftRepo->update($id, $draft);
+
+                // Audit Log
+                $db->execute(
+                    "INSERT INTO `audit_logs` (`admin_user_id`, `action`, `entity_type`, `entity_id`, `ip_hash`) 
+                     VALUES (:admin_id, 'approve_profile_update', 'providers', :entity_id, :ip)",
+                    [
+                        'admin_id' => $adminUserId,
+                        'entity_id' => $draft['provider_id'],
+                        'ip' => hash('sha256', $ipAddress)
+                    ]
+                );
+
+                Flash::success('تم قبول التحديثات ونشرها بنجاح للمزود: ' . $draft['display_name_ar']);
+            } else {
+                // Create new provider profile
+                $newProviderId = $this->repo->create($providerData);
+
+                // Link to provider account
+                $accountRepo->linkProvider($draft['provider_account_id'], $newProviderId);
+
+                // Update draft with linked provider ID and status
+                $draft['provider_id'] = $newProviderId;
+                $draft['status'] = 'approved';
+                $draftRepo->update($id, $draft);
+
+                // Audit Log
+                $db->execute(
+                    "INSERT INTO `audit_logs` (`admin_user_id`, `action`, `entity_type`, `entity_id`, `ip_hash`) 
+                     VALUES (:admin_id, 'approve_registration', 'providers', :entity_id, :ip)",
+                    [
+                        'admin_id' => $adminUserId,
+                        'entity_id' => $newProviderId,
+                        'ip' => hash('sha256', $ipAddress)
+                    ]
+                );
+
+                Flash::success('تم قبول طلب التسجيل وتأسيس الملف الشخصي بنجاح للمزود الجديد: ' . $draft['display_name_ar']);
+            }
+        } catch (\Throwable $e) {
+            Flash::error('خطأ أثناء النشر: ' . $e->getMessage());
+            $this->redirect("/admin/providers/drafts/{$id}/compare");
+            return new Response();
+        }
+
+        $this->redirect('/admin/providers/drafts');
+        return new Response();
+    }
+
+    /**
+     * Reject draft updates with comments/reasons.
+     */
+    public function rejectDraft(Request $request, string $id): Response
+    {
+        $id = (int)$id;
+        try {
+            $this->validateCsrf($request);
+        } catch (\RuntimeException $e) {
+            Flash::error('خطأ في حماية الجلسة (CSRF). يرجى المحاولة مرة أخرى.');
+            $this->redirect("/admin/providers/drafts/{$id}/compare");
+            return new Response();
+        }
+
+        $draftRepo = new ProviderDraftRepository();
+        $draft = $draftRepo->find($id);
+
+        if (!$draft || $draft['status'] !== 'pending_review') {
+            Flash::error('الطلب المحدد غير معلق للمراجعة.');
+            $this->redirect('/admin/providers/drafts');
+            return new Response();
+        }
+
+        $reason = trim($request->input('rejection_reason', ''));
+        if (empty($reason)) {
+            Flash::error('يرجى تحديد سبب الرفض لتوجيه الحرفي.');
+            $this->redirect("/admin/providers/drafts/{$id}/compare");
+            return new Response();
+        }
+
+        $draft['status'] = 'rejected';
+        $draft['admin_notes'] = $reason;
+        $draftRepo->update($id, $draft);
+
+        // Audit Log
+        $adminUserId = (int)Session::get('admin_user_id');
+        $ipAddress = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+        $db = Database::getInstance();
+        $db->execute(
+            "INSERT INTO `audit_logs` (`admin_user_id`, `action`, `entity_type`, `entity_id`, `ip_hash`, `new_value_json`) 
+             VALUES (:admin_id, 'reject_draft', 'provider_drafts', :entity_id, :ip, :notes)",
+            [
+                'admin_id' => $adminUserId,
+                'entity_id' => $id,
+                'ip' => hash('sha256', $ipAddress),
+                'notes' => json_encode(['reason' => $reason], JSON_UNESCAPED_UNICODE)
+            ]
+        );
+
+        Flash::success('تم رفض التعديلات وإرجاعها للحرفي مع الملاحظات.');
+        $this->redirect('/admin/providers/drafts');
+        return new Response();
     }
 }

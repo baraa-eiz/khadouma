@@ -201,7 +201,7 @@ class CitiesRepository extends Repository implements CitiesRepositoryInterface
     {
         $sql = "UPDATE `cities` SET 
                 `is_deleted` = 1,
-                `deleted_at` = NOW() 
+                `deleted_at` = CURRENT_TIMESTAMP 
                 WHERE `id` = :id";
         return $this->db->execute($sql, ['id' => $id]);
     }

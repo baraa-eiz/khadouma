@@ -52,21 +52,29 @@ This repository implements a bespoke **Native PHP Micro-MVC Framework** engineer
 │   │   │   ├── ServiceDTO.php        # Sanitized DTO model
 │   │   │   ├── ServicesValidation.php# Trim, character check & Arabic normalization
 │   │   │   └── Views/                # Front-end templates (list, show, create, edit)
-│   │   └── Locations/                # Locations Module (Cities & Areas CRUD)
-│   │       ├── Routes.php            # Locations routes registration
-│   │       ├── CitiesController.php  # Handles request parsing & redirect logic for Cities
-│   │       ├── AreasController.php   # Handles request parsing & redirect logic for Areas
-│   │       ├── CitiesService.php     # Business rules, audit logs & transactions for Cities
-│   │       ├── AreasService.php      # Business rules, audit logs & transactions for Areas
-│   │       ├── CitiesRepositoryInterface.php # Cities data access contract
-│   │       ├── AreasRepositoryInterface.php # Areas data access contract
-│   │       ├── CitiesRepository.php  # Dynamic sql building & PDO binding for Cities
-│   │       ├── AreasRepository.php   # Dynamic sql building & PDO binding for Areas
-│   │       ├── CityDTO.php           # Sanitized DTO model for Cities
-│   │       ├── AreaDTO.php           # Sanitized DTO model for Areas
-│   │       ├── CitiesValidation.php  # Trim, character check & Arabic normalization for Cities
-│   │       ├── AreasValidation.php   # Trim, character check & Arabic normalization for Areas
-│   │       └── Views/                # Front-end templates for Cities and Areas
+│   │   ├── Locations/                # Locations Module (Cities & Areas CRUD)
+│   │   │   ├── Routes.php            # Locations routes registration
+│   │   │   ├── CitiesController.php  # Handles request parsing & redirect logic for Cities
+│   │   │   ├── AreasController.php   # Handles request parsing & redirect logic for Areas
+│   │   │   ├── CitiesService.php     # Business rules, audit logs & transactions for Cities
+│   │   │   ├── AreasService.php      # Business rules, audit logs & transactions for Areas
+│   │   │   ├── CitiesRepositoryInterface.php # Cities data access contract
+│   │   │   ├── AreasRepositoryInterface.php # Areas data access contract
+│   │   │   ├── CitiesRepository.php  # Dynamic sql building & PDO binding for Cities
+│   │   │   ├── AreasRepository.php   # Dynamic sql building & PDO binding for Areas
+│   │   │   ├── CityDTO.php           # Sanitized DTO model for Cities
+│   │   │   ├── AreaDTO.php           # Sanitized DTO model for Areas
+│   │   │   ├── CitiesValidation.php  # Trim, character check & Arabic normalization for Cities
+│   │   │   ├── AreasValidation.php   # Trim, character check & Arabic normalization for Areas
+│   │   │   └── Views/                # Front-end templates for Cities and Areas
+│   │   └── Providers/                # Providers & Portal Module (Self-registration, Wizards, Drafts)
+│   │       ├── Routes.php            # Providers & Draft routes registration
+│   │       ├── ProvidersController.php # Handles admin comparison, approval, and management
+│   │       ├── ProvidersService.php  # Business operations & transaction wrapper
+│   │       ├── ProvidersRepositoryInterface.php # Repository interface
+│   │       ├── ProviderData.php      # DTO model for provider listings
+│   │       ├── ProvidersValidation.php # Custom validation rules
+│   │       └── Views/                # Front-end templates for admin list, show, comparison, and dashboard
 │   └── Repositories/                 # Database repositories wrapper (legacy compatibility)
 ├── config/                           # System Configurations (app.php, database.php, navigation.php)
 ├── database/                         # Database Migration & Seeds
@@ -148,16 +156,32 @@ To ensure framework stability and prevent regression, the project includes three
 3.  **Locations CRUD Integration Tests** (Validates the validation pipeline, city-scoped area slug uniqueness, DTO integrity, transactional service layers, soft-deletion, restoration, and audit logging for Cities and Areas):
     ```bash
     php test_locations_crud.php
-    ```ion, the project includes two automated test suites:
+    ```
 
-1.  **Smoke Tests** (Verifies core class loading, database transactions, cache, file storage, and session lifecycles):
-    ```bash
-    php test_smoke.php
-    ```
-2.  **Services CRUD Integration Tests** (Validates the validation pipeline, DTO integrity, transactional service layers, soft-deletion, restoration, and audit logging):
-    ```bash
-    php test_services_crud.php
-    ```
+---
+
+## ⚡ Admin Productivity Suite (Stage 3.5)
+
+To optimize administrative operations and manage production data at scale, the dashboard includes:
+*   **Bulk Actions**: Perform batch status changes (approve, suspend) and bulk soft-delete/restore operations on multiple records instantly.
+*   **Import/Export Utilities**: Import datasets directly via standardized CSV templates and export catalog listings with ease.
+*   **Advanced Search & Filtering**: Multi-keyword Arabic search (supporting orthographic normalization) combined with complex multi-criteria filters.
+*   **SEO Manager**: Automated title and description generation based on city and service classifications.
+*   **Media Manager**: Identify and clean up orphaned files/images to prevent server storage bloat.
+
+---
+
+## 🛡️ Provider Self-Registration & Portal (Stage 3.6)
+
+An E2E onboarding and draft submission architecture allows providers to self-register:
+*   **Independent Accounts**: Distinct identity accounts (`provider_accounts`) that manage draft states before they are published to public profiles (`providers`).
+*   **5-Step Onboarding Wizard**: A step-by-step registration flow:
+    1. Contact coordinates (Phone & WhatsApp).
+    2. Coverage scope (City and specific neighborhoods).
+    3. Business details (independent or agency, starting rates, experience years, and description).
+    4. Profile logo & gallery work photos upload.
+    5. Search Metadata configuration (SEO titles and descriptions).
+*   **Version Control & Review**: All modifications by providers create a `provider_drafts` record. Administrators compare draft changes side-by-side on a diff comparison screen and either approve/publish or reject them with feedback.
 
 ---
 

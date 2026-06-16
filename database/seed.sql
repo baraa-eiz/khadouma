@@ -401,3 +401,16 @@ INSERT INTO `provider_trust_badge_map` (`provider_id`, `trust_badge_id`) VALUES
 INSERT INTO `seo_metadata` (`entity_type`, `entity_id`, `canonical_url`, `meta_title_ar`, `meta_description_ar`, `og_title_ar`, `og_description_ar`, `structured_data_json`) VALUES
 ('general', NULL, 'https://service.cnc-jordan.com/', 'خدومة | دليل الحرفيين والخدمات المنزلية والصيانة في سوريا', 'ابحث عن أفضل الكهربائيين، السباكين، عمال التنظيف، الدهانين، وشركات نقل الأثاث الموثوقين في دمشق وسوريا. تواصل مباشر بدون عمولات.', 'خدومة - الخدمات المنزلية في سوريا', 'دليل الحرفيين والخدمات المنزلية والصيانة في دمشق وسوريا. تواصل مباشر وبدون عمولات.', '{"@context":"https://schema.org","@type":"WebSite","name":"Khadomeh","url":"https://service.cnc-jordan.com/"}'),
 ('service', 1, 'https://service.cnc-jordan.com/services/cleaning', 'أفضل عمال وورشات تنظيف وتعقيم المنازل بدمشق | خدومة', 'دليل ورشات وعمال تنظيف البيوت، الشقق والمكاتب في دمشق وسوريا. قارن أسعار الخدمات المنزلية وتقييمات العملاء وتواصل معهم مباشرة.', 'خدمات تنظيف منازل بدمشق | منصة خدومة', 'دليل ورشات وعمال تنظيف البيوت والشقق والمكاتب في دمشق وسوريا.', NULL);
+
+-- ------------------------------------------------------------
+-- 17. PROVIDER ACCOUNTS
+-- ------------------------------------------------------------
+INSERT INTO `provider_accounts` (`email`, `google_id`, `display_name`, `avatar_url`, `provider_id`, `status`) VALUES
+('abu.ahmad.auth@gmail.local', 'google-100001', 'أبو أحمد السباك', 'https://lh3.googleusercontent.com/a/avatar1', 1, 'active'),
+('new.provider.auth@gmail.local', 'google-100002', 'مزود خدمة جديد', 'https://lh3.googleusercontent.com/a/avatar2', NULL, 'active');
+
+-- ------------------------------------------------------------
+-- 18. PROVIDER DRAFTS
+-- ------------------------------------------------------------
+INSERT INTO `provider_drafts` (`provider_id`, `provider_account_id`, `display_name_ar`, `slug`, `business_type`, `phone`, `whatsapp`, `email`, `city_id`, `primary_service_id`, `short_description_ar`, `description_ar`, `years_experience`, `starting_price`, `price_unit`, `website`, `working_hours`, `social_links`, `status`) VALUES
+(NULL, 2, 'منشأة الهدى للخدمات', 'al-hoda-services', 'company', '+963999111222', '+963999111222', 'alhoda@gmail.local', 1, 1, 'شركة تنظيف وتعقيم متكاملة في كافة مناطق دمشق', 'نقدم خدمات التنظيف الجاف وتعقيم الشقق والفلل السكنية والمباني التجارية مع أحدث الأجهزة والمواد الصديقة للبيئة.', 5, 50000.00, 'hour', 'https://alhoda.services.local', '8:00 AM - 10:00 PM', '{"facebook":"https://facebook.com/alhoda","instagram":"https://instagram.com/alhoda"}', 'pending_review');

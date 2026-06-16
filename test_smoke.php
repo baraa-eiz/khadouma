@@ -46,7 +46,7 @@ try {
 
     // 6. Test Transactions (Begin & Rollback)
     $db->beginTransaction();
-    $db->query("SELECT 1 FOR UPDATE");
+    $db->query("SELECT 1");
     $db->rollBack();
     echo "✔ Transaction Begin and Rollback verified.\n";
 

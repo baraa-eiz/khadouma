@@ -30,8 +30,8 @@ class AdminUserRepository {
      */
     public function updateLastLogin($id) {
         return $this->db->query(
-            "UPDATE `admin_users` SET `last_login_at` = NOW() WHERE `id` = ?",
-            [$id]
+            "UPDATE `admin_users` SET `last_login_at` = ? WHERE `id` = ?",
+            [date('Y-m-d H:i:s'), $id]
         );
     }
 }

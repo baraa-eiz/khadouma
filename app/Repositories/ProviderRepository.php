@@ -146,7 +146,20 @@ class ProviderRepository extends Repository implements ProvidersRepositoryInterf
         $where = [];
         $params = [];
         
-        $sql = "SELECT DISTINCT p.*, s.display_name_ar as service_name, c.display_name_ar as city_name 
+        $completionScoreSql = "(
+            (CASE WHEN EXISTS(SELECT 1 FROM `provider_images` WHERE `provider_id` = p.id AND `image_type` = 'profile' AND `is_active` = 1 AND `deleted_at` IS NULL) THEN 15 ELSE 0 END) +
+            (CASE WHEN EXISTS(SELECT 1 FROM `provider_area_map` WHERE `provider_id` = p.id) THEN 15 ELSE 0 END) +
+            (CASE WHEN p.description_ar IS NOT NULL AND TRIM(p.description_ar) != '' THEN 15 ELSE 0 END) +
+            (CASE WHEN p.short_description_ar IS NOT NULL AND TRIM(p.short_description_ar) != '' THEN 10 ELSE 0 END) +
+            (CASE WHEN p.whatsapp IS NOT NULL AND TRIM(p.whatsapp) != '' THEN 10 ELSE 0 END) +
+            (CASE WHEN p.email IS NOT NULL AND TRIM(p.email) != '' THEN 10 ELSE 0 END) +
+            (CASE WHEN EXISTS(SELECT 1 FROM `provider_images` WHERE `provider_id` = p.id AND `image_type` = 'work_photo' AND `is_active` = 1 AND `deleted_at` IS NULL) THEN 15 ELSE 0 END) +
+            (CASE WHEN p.years_experience > 0 THEN 5 ELSE 0 END) +
+            (CASE WHEN EXISTS(SELECT 1 FROM `provider_service_map` WHERE `provider_id` = p.id) THEN 5 ELSE 0 END)
+        )";
+
+        $sql = "SELECT DISTINCT p.*, s.display_name_ar as service_name, c.display_name_ar as city_name,
+                $completionScoreSql AS completion_score 
                 FROM `providers` p
                 LEFT JOIN `services` s ON p.primary_service_id = s.id
                 LEFT JOIN `cities` c ON p.city_id = c.id";
@@ -206,13 +219,70 @@ class ProviderRepository extends Repository implements ProvidersRepositoryInterf
             $where[] = "p.deleted_at IS NULL";
         }
 
+        // Advanced filters
+        if (isset($filters['rating_min']) && $filters['rating_min'] !== '') {
+            $where[] = "p.rating >= :rating_min";
+            $params['rating_min'] = (float)$filters['rating_min'];
+        }
+        if (isset($filters['rating_max']) && $filters['rating_max'] !== '') {
+            $where[] = "p.rating <= :rating_max";
+            $params['rating_max'] = (float)$filters['rating_max'];
+        }
+        if (isset($filters['experience_min']) && $filters['experience_min'] !== '') {
+            $where[] = "p.years_experience >= :experience_min";
+            $params['experience_min'] = (int)$filters['experience_min'];
+        }
+        if (isset($filters['experience_max']) && $filters['experience_max'] !== '') {
+            $where[] = "p.years_experience <= :experience_max";
+            $params['experience_max'] = (int)$filters['experience_max'];
+        }
+        if (isset($filters['business_type']) && $filters['business_type'] !== '') {
+            $where[] = "p.business_type = :business_type";
+            $params['business_type'] = $filters['business_type'];
+        }
+        if (isset($filters['verified']) && $filters['verified'] !== '') {
+            $where[] = "p.verified = :verified";
+            $params['verified'] = $filters['verified'] ? 1 : 0;
+        }
+        if (isset($filters['phone_verified']) && $filters['phone_verified'] !== '') {
+            $where[] = "p.phone_verified = :phone_verified";
+            $params['phone_verified'] = $filters['phone_verified'] ? 1 : 0;
+        }
+        if (isset($filters['identity_verified']) && $filters['identity_verified'] !== '') {
+            $where[] = "p.identity_verified = :identity_verified";
+            $params['identity_verified'] = $filters['identity_verified'] ? 1 : 0;
+        }
+        if (isset($filters['is_featured']) && $filters['is_featured'] !== '') {
+            $where[] = "p.is_featured = :is_featured";
+            $params['is_featured'] = $filters['is_featured'] ? 1 : 0;
+        }
+        if (isset($filters['completion_min']) && $filters['completion_min'] !== '') {
+            $where[] = "$completionScoreSql >= :completion_min";
+            $params['completion_min'] = (int)$filters['completion_min'];
+        }
+        if (isset($filters['completion_max']) && $filters['completion_max'] !== '') {
+            $where[] = "$completionScoreSql <= :completion_max";
+            $params['completion_max'] = (int)$filters['completion_max'];
+        }
+
+        // Smart Search Keyword Parsing
         if (!empty($filters['keyword'])) {
-            $normalizedKeyword = normalize_arabic($filters['keyword']);
-            $where[] = "(p.normalized_name LIKE :keyword OR p.phone LIKE :keyword_raw1 OR p.short_description_ar LIKE :keyword_raw2 OR p.description_ar LIKE :keyword_raw3)";
-            $params['keyword'] = '%' . $normalizedKeyword . '%';
-            $params['keyword_raw1'] = '%' . $filters['keyword'] . '%';
-            $params['keyword_raw2'] = '%' . $filters['keyword'] . '%';
-            $params['keyword_raw3'] = '%' . $filters['keyword'] . '%';
+            $keywords = preg_split('/\s+/u', trim($filters['keyword']), -1, PREG_SPLIT_NO_EMPTY);
+            $keywordConditions = [];
+            $kIdx = 0;
+            foreach ($keywords as $word) {
+                $normalizedWord = normalize_arabic($word);
+                $paramWord = 'k_word_' . $kIdx;
+                $paramRaw = 'k_raw_' . $kIdx;
+                
+                $keywordConditions[] = "(p.normalized_name LIKE :{$paramWord} OR p.phone LIKE :{$paramRaw} OR p.short_description_ar LIKE :{$paramWord} OR p.description_ar LIKE :{$paramWord})";
+                $params[$paramWord] = '%' . $normalizedWord . '%';
+                $params[$paramRaw] = '%' . $word . '%';
+                $kIdx++;
+            }
+            if (!empty($keywordConditions)) {
+                $where[] = '(' . implode(' AND ', $keywordConditions) . ')';
+            }
         }
 
         if (!empty($where)) {
@@ -220,13 +290,13 @@ class ProviderRepository extends Repository implements ProvidersRepositoryInterf
         }
 
         // Sanitize sorting column to prevent SQL injection
-        $allowedCols = ['id', 'display_name_ar', 'phone', 'city_id', 'primary_service_id', 'sort_weight', 'rating', 'verified', 'is_active', 'status', 'created_at'];
+        $allowedCols = ['id', 'display_name_ar', 'phone', 'city_id', 'primary_service_id', 'sort_weight', 'rating', 'verified', 'is_active', 'status', 'created_at', 'completion_score'];
         if (!in_array($orderBy, $allowedCols)) {
             $orderBy = 'sort_weight';
         }
         $orderDir = strtoupper($orderDir) === 'ASC' ? 'ASC' : 'DESC';
 
-        $sql .= " ORDER BY p.`$orderBy` $orderDir LIMIT :limit OFFSET :offset";
+        $sql .= " ORDER BY `$orderBy` $orderDir LIMIT :limit OFFSET :offset";
 
         $pdo = $this->db->getConnection();
         $stmt = $pdo->prepare($sql);
@@ -250,6 +320,18 @@ class ProviderRepository extends Repository implements ProvidersRepositoryInterf
         $where = [];
         $params = [];
         
+        $completionScoreSql = "(
+            (CASE WHEN EXISTS(SELECT 1 FROM `provider_images` WHERE `provider_id` = p.id AND `image_type` = 'profile' AND `is_active` = 1 AND `deleted_at` IS NULL) THEN 15 ELSE 0 END) +
+            (CASE WHEN EXISTS(SELECT 1 FROM `provider_area_map` WHERE `provider_id` = p.id) THEN 15 ELSE 0 END) +
+            (CASE WHEN p.description_ar IS NOT NULL AND TRIM(p.description_ar) != '' THEN 15 ELSE 0 END) +
+            (CASE WHEN p.short_description_ar IS NOT NULL AND TRIM(p.short_description_ar) != '' THEN 10 ELSE 0 END) +
+            (CASE WHEN p.whatsapp IS NOT NULL AND TRIM(p.whatsapp) != '' THEN 10 ELSE 0 END) +
+            (CASE WHEN p.email IS NOT NULL AND TRIM(p.email) != '' THEN 10 ELSE 0 END) +
+            (CASE WHEN EXISTS(SELECT 1 FROM `provider_images` WHERE `provider_id` = p.id AND `image_type` = 'work_photo' AND `is_active` = 1 AND `deleted_at` IS NULL) THEN 15 ELSE 0 END) +
+            (CASE WHEN p.years_experience > 0 THEN 5 ELSE 0 END) +
+            (CASE WHEN EXISTS(SELECT 1 FROM `provider_service_map` WHERE `provider_id` = p.id) THEN 5 ELSE 0 END)
+        )";
+
         $sql = "SELECT COUNT(DISTINCT p.id) FROM `providers` p
                 LEFT JOIN `services` s ON p.primary_service_id = s.id
                 LEFT JOIN `cities` c ON p.city_id = c.id";
@@ -308,13 +390,70 @@ class ProviderRepository extends Repository implements ProvidersRepositoryInterf
             $where[] = "p.deleted_at IS NULL";
         }
 
+        // Advanced filters
+        if (isset($criteria['rating_min']) && $criteria['rating_min'] !== '') {
+            $where[] = "p.rating >= :rating_min";
+            $params['rating_min'] = (float)$criteria['rating_min'];
+        }
+        if (isset($criteria['rating_max']) && $criteria['rating_max'] !== '') {
+            $where[] = "p.rating <= :rating_max";
+            $params['rating_max'] = (float)$criteria['rating_max'];
+        }
+        if (isset($criteria['experience_min']) && $criteria['experience_min'] !== '') {
+            $where[] = "p.years_experience >= :experience_min";
+            $params['experience_min'] = (int)$criteria['experience_min'];
+        }
+        if (isset($criteria['experience_max']) && $criteria['experience_max'] !== '') {
+            $where[] = "p.years_experience <= :experience_max";
+            $params['experience_max'] = (int)$criteria['experience_max'];
+        }
+        if (isset($criteria['business_type']) && $criteria['business_type'] !== '') {
+            $where[] = "p.business_type = :business_type";
+            $params['business_type'] = $criteria['business_type'];
+        }
+        if (isset($criteria['verified']) && $criteria['verified'] !== '') {
+            $where[] = "p.verified = :verified";
+            $params['verified'] = $criteria['verified'] ? 1 : 0;
+        }
+        if (isset($criteria['phone_verified']) && $criteria['phone_verified'] !== '') {
+            $where[] = "p.phone_verified = :phone_verified";
+            $params['phone_verified'] = $criteria['phone_verified'] ? 1 : 0;
+        }
+        if (isset($criteria['identity_verified']) && $criteria['identity_verified'] !== '') {
+            $where[] = "p.identity_verified = :identity_verified";
+            $params['identity_verified'] = $criteria['identity_verified'] ? 1 : 0;
+        }
+        if (isset($criteria['is_featured']) && $criteria['is_featured'] !== '') {
+            $where[] = "p.is_featured = :is_featured";
+            $params['is_featured'] = $criteria['is_featured'] ? 1 : 0;
+        }
+        if (isset($criteria['completion_min']) && $criteria['completion_min'] !== '') {
+            $where[] = "$completionScoreSql >= :completion_min";
+            $params['completion_min'] = (int)$criteria['completion_min'];
+        }
+        if (isset($criteria['completion_max']) && $criteria['completion_max'] !== '') {
+            $where[] = "$completionScoreSql <= :completion_max";
+            $params['completion_max'] = (int)$criteria['completion_max'];
+        }
+
+        // Smart Search Keyword Parsing
         if (!empty($criteria['keyword'])) {
-            $normalizedKeyword = normalize_arabic($criteria['keyword']);
-            $where[] = "(p.normalized_name LIKE :keyword OR p.phone LIKE :keyword_raw1 OR p.short_description_ar LIKE :keyword_raw2 OR p.description_ar LIKE :keyword_raw3)";
-            $params['keyword'] = '%' . $normalizedKeyword . '%';
-            $params['keyword_raw1'] = '%' . $criteria['keyword'] . '%';
-            $params['keyword_raw2'] = '%' . $criteria['keyword'] . '%';
-            $params['keyword_raw3'] = '%' . $criteria['keyword'] . '%';
+            $keywords = preg_split('/\s+/u', trim($criteria['keyword']), -1, PREG_SPLIT_NO_EMPTY);
+            $keywordConditions = [];
+            $kIdx = 0;
+            foreach ($keywords as $word) {
+                $normalizedWord = normalize_arabic($word);
+                $paramWord = 'k_word_' . $kIdx;
+                $paramRaw = 'k_raw_' . $kIdx;
+                
+                $keywordConditions[] = "(p.normalized_name LIKE :{$paramWord} OR p.phone LIKE :{$paramRaw} OR p.short_description_ar LIKE :{$paramWord} OR p.description_ar LIKE :{$paramWord})";
+                $params[$paramWord] = '%' . $normalizedWord . '%';
+                $params[$paramRaw] = '%' . $word . '%';
+                $kIdx++;
+            }
+            if (!empty($keywordConditions)) {
+                $where[] = '(' . implode(' AND ', $keywordConditions) . ')';
+            }
         }
 
         if (!empty($where)) {
@@ -325,14 +464,64 @@ class ProviderRepository extends Repository implements ProvidersRepositoryInterf
     }
 
     /**
+     * Bulk update workflow status.
+     */
+    public function bulkUpdateStatus(array $ids, string $status): bool
+    {
+        if (empty($ids)) return false;
+        $inQuery = implode(',', array_map('intval', $ids));
+        return $this->db->execute(
+            "UPDATE `providers` SET `status` = :status, `updated_at` = CURRENT_TIMESTAMP WHERE `id` IN ($inQuery)",
+            ['status' => $status]
+        );
+    }
+
+    /**
+     * Bulk update is_active status.
+     */
+    public function bulkUpdateIsActive(array $ids, bool $isActive): bool
+    {
+        if (empty($ids)) return false;
+        $inQuery = implode(',', array_map('intval', $ids));
+        return $this->db->execute(
+            "UPDATE `providers` SET `is_active` = :is_active, `updated_at` = CURRENT_TIMESTAMP WHERE `id` IN ($inQuery)",
+            ['is_active' => $isActive ? 1 : 0]
+        );
+    }
+
+    /**
+     * Bulk soft delete.
+     */
+    public function bulkSoftDelete(array $ids): bool
+    {
+        if (empty($ids)) return false;
+        $inQuery = implode(',', array_map('intval', $ids));
+        return $this->db->execute(
+            "UPDATE `providers` SET `deleted_at` = CURRENT_TIMESTAMP WHERE `id` IN ($inQuery)"
+        );
+    }
+
+    /**
+     * Bulk restore.
+     */
+    public function bulkRestore(array $ids): bool
+    {
+        if (empty($ids)) return false;
+        $inQuery = implode(',', array_map('intval', $ids));
+        return $this->db->execute(
+            "UPDATE `providers` SET `deleted_at` = NULL WHERE `id` IN ($inQuery)"
+        );
+    }
+
+    /**
      * Create a new provider.
      */
     public function create(array $data): int
     {
         $sql = "INSERT INTO `providers` 
-                (`slug`, `display_name_ar`, `normalized_name`, `business_type`, `phone`, `whatsapp`, `city_id`, `primary_service_id`, `short_description_ar`, `description_ar`, `years_experience`, `starting_price`, `price_unit`, `verified`, `is_active`, `sort_weight`, `status`) 
+                (`slug`, `display_name_ar`, `normalized_name`, `business_type`, `phone`, `whatsapp`, `city_id`, `primary_service_id`, `short_description_ar`, `description_ar`, `years_experience`, `starting_price`, `price_unit`, `verified`, `is_active`, `sort_weight`, `status`, `website`, `working_hours`, `social_links`) 
                 VALUES 
-                (:slug, :display_name_ar, :normalized_name, :business_type, :phone, :whatsapp, :city_id, :primary_service_id, :short_description_ar, :description_ar, :years_experience, :starting_price, :price_unit, :verified, :is_active, :sort_weight, :status)";
+                (:slug, :display_name_ar, :normalized_name, :business_type, :phone, :whatsapp, :city_id, :primary_service_id, :short_description_ar, :description_ar, :years_experience, :starting_price, :price_unit, :verified, :is_active, :sort_weight, :status, :website, :working_hours, :social_links)";
         
         $this->db->execute($sql, [
             'slug' => $data['slug'],
@@ -352,6 +541,9 @@ class ProviderRepository extends Repository implements ProvidersRepositoryInterf
             'is_active' => $data['is_active'] ? 1 : 0,
             'sort_weight' => $data['sort_weight'] ?? 0,
             'status' => $data['status'] ?? 'approved',
+            'website' => $data['website'] ?? null,
+            'working_hours' => $data['working_hours'] ?? null,
+            'social_links' => isset($data['social_links']) ? (is_array($data['social_links']) ? json_encode($data['social_links'], JSON_UNESCAPED_UNICODE) : $data['social_links']) : null,
         ]);
         
         $providerId = (int)$this->db->lastInsertId();
@@ -387,7 +579,10 @@ class ProviderRepository extends Repository implements ProvidersRepositoryInterf
                 `verified` = :verified,
                 `is_active` = :is_active,
                 `sort_weight` = :sort_weight,
-                `status` = :status
+                `status` = :status,
+                `website` = :website,
+                `working_hours` = :working_hours,
+                `social_links` = :social_links
                 WHERE `id` = :id";
         
         $res = $this->db->execute($sql, [
@@ -409,6 +604,9 @@ class ProviderRepository extends Repository implements ProvidersRepositoryInterf
             'is_active' => $data['is_active'] ? 1 : 0,
             'sort_weight' => $data['sort_weight'] ?? 0,
             'status' => $data['status'] ?? 'approved',
+            'website' => $data['website'] ?? null,
+            'working_hours' => $data['working_hours'] ?? null,
+            'social_links' => isset($data['social_links']) ? (is_array($data['social_links']) ? json_encode($data['social_links'], JSON_UNESCAPED_UNICODE) : $data['social_links']) : null,
         ]);
         
         // Sync relations
@@ -426,7 +624,7 @@ class ProviderRepository extends Repository implements ProvidersRepositoryInterf
     public function softDelete(int $id): bool
     {
         return $this->db->execute(
-            "UPDATE `providers` SET `deleted_at` = NOW() WHERE `id` = :id",
+            "UPDATE `providers` SET `deleted_at` = CURRENT_TIMESTAMP WHERE `id` = :id",
             ['id' => $id]
         );
     }

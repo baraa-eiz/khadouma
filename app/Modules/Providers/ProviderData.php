@@ -36,6 +36,11 @@ class ProviderData
     public readonly ?string $meta_title_ar;
     public readonly ?string $meta_description_ar;
 
+    // Additional fields
+    public readonly ?string $website;
+    public readonly ?string $working_hours;
+    public readonly array $social_links;
+
     public function __construct(array $data)
     {
         $this->id = isset($data['id']) ? (int)$data['id'] : null;
@@ -63,6 +68,22 @@ class ProviderData
         
         $this->meta_title_ar = isset($data['meta_title_ar']) && trim($data['meta_title_ar']) !== '' ? trim((string)$data['meta_title_ar']) : null;
         $this->meta_description_ar = isset($data['meta_description_ar']) && trim($data['meta_description_ar']) !== '' ? trim((string)$data['meta_description_ar']) : null;
+
+        $this->website = isset($data['website']) && trim($data['website']) !== '' ? trim((string)$data['website']) : null;
+        $this->working_hours = isset($data['working_hours']) && trim($data['working_hours']) !== '' ? trim((string)$data['working_hours']) : null;
+        
+        if (isset($data['social_links'])) {
+            if (is_array($data['social_links'])) {
+                $this->social_links = $data['social_links'];
+            } elseif (is_string($data['social_links'])) {
+                $decoded = json_decode($data['social_links'], true);
+                $this->social_links = is_array($decoded) ? $decoded : [];
+            } else {
+                $this->social_links = [];
+            }
+        } else {
+            $this->social_links = [];
+        }
     }
 
     public static function fromArray(array $data): self
@@ -96,6 +117,9 @@ class ProviderData
             'work_photos' => $this->work_photos,
             'meta_title_ar' => $this->meta_title_ar,
             'meta_description_ar' => $this->meta_description_ar,
+            'website' => $this->website,
+            'working_hours' => $this->working_hours,
+            'social_links' => $this->social_links,
         ];
     }
 }

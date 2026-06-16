@@ -42,6 +42,20 @@ return [
         'active_pattern' => '/admin/providers*'
     ],
     [
+        'key' => 'drafts',
+        'label' => 'مراجعة طلبات التعديل',
+        'icon' => 'alert-triangle',
+        'url' => '/admin/providers/drafts',
+        'active_pattern' => '/admin/providers/drafts*'
+    ],
+    [
+        'key' => 'productivity',
+        'label' => 'أدوات الإنتاجية',
+        'icon' => 'zap',
+        'url' => '/admin/productivity/quality',
+        'active_pattern' => '/admin/productivity*'
+    ],
+    [
         'key' => 'reviews',
         'label' => 'التقييمات',
         'icon' => 'star',

@@ -61,7 +61,6 @@ $router->get('/privacy', function() {
 
 // Provider Search, Discovery & Event Tracking
 $router->get('/search', [App\Controllers\ProviderController::class, 'search']);
-$router->get('/provider/{slug}', [App\Controllers\ProviderController::class, 'show']);
 $router->post('/api/contact', [App\Controllers\ProviderController::class, 'trackContact']);
 
 
@@ -70,6 +69,30 @@ $router->get('/admin/login', [App\Controllers\Admin\AuthController::class, 'show
 $router->post('/admin/login', [App\Controllers\Admin\AuthController::class, 'login'], [App\Middleware\AdminGuest::class]);
 $router->post('/admin/logout', [App\Controllers\Admin\AuthController::class, 'logout'], [App\Middleware\AdminAuth::class]);
 $router->get('/admin/dashboard', [App\Controllers\Admin\DashboardController::class, 'index'], [App\Middleware\AdminAuth::class]);
+
+// Admin Productivity Tools
+$router->get('/admin/productivity/quality', [App\Controllers\Admin\ProductivityController::class, 'qualityReport'], [App\Middleware\AdminAuth::class]);
+$router->post('/admin/productivity/merge', [App\Controllers\Admin\ProductivityController::class, 'mergeProviders'], [App\Middleware\AdminAuth::class]);
+$router->get('/admin/productivity/seo', [App\Controllers\Admin\ProductivityController::class, 'seoManager'], [App\Middleware\AdminAuth::class]);
+$router->post('/admin/productivity/seo/save', [App\Controllers\Admin\ProductivityController::class, 'saveSeo'], [App\Middleware\AdminAuth::class]);
+$router->post('/admin/productivity/seo/auto', [App\Controllers\Admin\ProductivityController::class, 'autoGenerateSeo'], [App\Middleware\AdminAuth::class]);
+$router->get('/admin/productivity/media', [App\Controllers\Admin\ProductivityController::class, 'mediaManager'], [App\Middleware\AdminAuth::class]);
+$router->post('/admin/productivity/media/clean', [App\Controllers\Admin\ProductivityController::class, 'cleanMedia'], [App\Middleware\AdminAuth::class]);
+
+// Provider Portal Routes
+$router->get('/provider/login', [App\Controllers\Provider\AuthController::class, 'showLogin'], [App\Middleware\ProviderGuest::class]);
+$router->get('/provider/auth/google', [App\Controllers\Provider\AuthController::class, 'googleAuth'], [App\Middleware\ProviderGuest::class]);
+$router->get('/provider/auth/google/stub', [App\Controllers\Provider\AuthController::class, 'showGoogleStub'], [App\Middleware\ProviderGuest::class]);
+$router->post('/provider/auth/google/stub', [App\Controllers\Provider\AuthController::class, 'processGoogleStub'], [App\Middleware\ProviderGuest::class]);
+$router->post('/provider/logout', [App\Controllers\Provider\AuthController::class, 'logout'], [App\Middleware\ProviderAuth::class]);
+
+$router->get('/provider/dashboard', [App\Controllers\Provider\DashboardController::class, 'index'], [App\Middleware\ProviderAuth::class]);
+$router->get('/provider/wizard', [App\Controllers\Provider\WizardController::class, 'index'], [App\Middleware\ProviderAuth::class]);
+$router->post('/provider/wizard/save', [App\Controllers\Provider\WizardController::class, 'saveStep'], [App\Middleware\ProviderAuth::class]);
+$router->post('/provider/wizard/submit', [App\Controllers\Provider\WizardController::class, 'submitReview'], [App\Middleware\ProviderAuth::class]);
+
+// Wildcard route for provider public profile - must be after static /provider/ routes
+$router->get('/provider/{slug}', [App\Controllers\ProviderController::class, 'show']);
 
 // Services CRUD Module
 require dirname(__DIR__) . '/app/Modules/Services/Routes.php';
