@@ -113,8 +113,35 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
             <!-- Global notifications / errors -->
             <div id="contact-error-banner" class="alert alert-danger" style="display: none; margin-bottom: 20px;"></div>
 
-            <!-- Providers Listing Grid -->
-            <?php if (empty($providers)): ?>
+            <!-- SECTION 1: Matching Services -->
+            <div class="search-section services-section" style="margin-bottom: 30px;">
+                <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                    📂 الخدمات المطابقة
+                </h3>
+                <?php if (!empty($matchingServices)): ?>
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 12px;">
+                        <?php foreach ($matchingServices as $ms): ?>
+                            <?= App\Core\View::render('components/ServiceChip', [
+                                'service_slug' => $ms['slug'],
+                                'service_name' => $ms['display_name_ar'],
+                                'city_slug' => $selectedCity ? $selectedCity['slug'] : '',
+                                'style' => 'padding: 8px 14px; font-size: 13px; font-weight: 700;'
+                            ]); ?>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <div style="background: #fef2f2; border: 1px solid #fee2e2; border-radius: 10px; padding: 15px; color: #b91c1c; font-size: 0.9rem; font-weight: 600; text-align: right;">
+                        ⚠️ لا توجد خدمات مطابقة لخيارات البحث.
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <!-- SECTION 2: Matching Providers -->
+            <div class="search-section providers-section">
+                <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                    👨‍🔧 مزودو الخدمات المطابقون
+                </h3>
+                <?php if (empty($providers)): ?>
                 <?php
                 // Include empty state component
                 $empty_title = 'لم نجد أي نتائج تطابق بحثك';
@@ -240,6 +267,7 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
                 }
                 ?>
             <?php endif; ?>
+            </div> <!-- End of SECTION 2: Matching Providers -->
         </main>
     </div>
     

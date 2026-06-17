@@ -158,15 +158,39 @@ class ProviderRepository extends Repository implements ProvidersRepositoryInterf
             (CASE WHEN EXISTS(SELECT 1 FROM `provider_service_map` WHERE `provider_id` = p.id) THEN 5 ELSE 0 END)
         )";
 
+        $joinServices = false;
+        $joinAreas = false;
+
+        if (!empty($filters['service'])) {
+            $joinServices = true;
+        }
+
+        if (!empty($filters['area'])) {
+            $joinAreas = true;
+        }
+
+        if (!empty($filters['keyword'])) {
+            $joinServices = true;
+            $joinAreas = true;
+        }
+
         $sql = "SELECT DISTINCT p.*, s.display_name_ar as service_name, c.display_name_ar as city_name,
                 $completionScoreSql AS completion_score 
                 FROM `providers` p
                 LEFT JOIN `services` s ON p.primary_service_id = s.id
                 LEFT JOIN `cities` c ON p.city_id = c.id";
 
-        if (!empty($filters['service'])) {
+        if ($joinServices) {
             $sql .= " LEFT JOIN `provider_service_map` psm ON p.id = psm.provider_id
                       LEFT JOIN `services` s2 ON psm.service_id = s2.id";
+        }
+
+        if ($joinAreas) {
+            $sql .= " LEFT JOIN `provider_area_map` pam ON p.id = pam.provider_id
+                      LEFT JOIN `areas` a ON pam.area_id = a.id";
+        }
+
+        if (!empty($filters['service'])) {
             $where[] = "(s.slug = :service1 OR s2.slug = :service2)";
             $params['service1'] = $filters['service'];
             $params['service2'] = $filters['service'];
@@ -178,8 +202,6 @@ class ProviderRepository extends Repository implements ProvidersRepositoryInterf
         }
 
         if (!empty($filters['area'])) {
-            $sql .= " INNER JOIN `provider_area_map` pam ON p.id = pam.provider_id
-                      INNER JOIN `areas` a ON pam.area_id = a.id";
             $where[] = "a.slug = :area";
             $params['area'] = $filters['area'];
         }
@@ -275,7 +297,16 @@ class ProviderRepository extends Repository implements ProvidersRepositoryInterf
                 $paramWord = 'k_word_' . $kIdx;
                 $paramRaw = 'k_raw_' . $kIdx;
                 
-                $keywordConditions[] = "(p.normalized_name LIKE :{$paramWord} OR p.phone LIKE :{$paramRaw} OR p.short_description_ar LIKE :{$paramWord} OR p.description_ar LIKE :{$paramWord})";
+                $keywordConditions[] = "(
+                    p.normalized_name LIKE :{$paramWord} OR 
+                    p.phone LIKE :{$paramRaw} OR 
+                    p.short_description_ar LIKE :{$paramWord} OR 
+                    p.description_ar LIKE :{$paramWord} OR 
+                    s.display_name_ar LIKE :{$paramWord} OR 
+                    s2.display_name_ar LIKE :{$paramWord} OR 
+                    c.display_name_ar LIKE :{$paramWord} OR 
+                    a.display_name_ar LIKE :{$paramWord}
+                )";
                 $params[$paramWord] = '%' . $normalizedWord . '%';
                 $params[$paramRaw] = '%' . $word . '%';
                 $kIdx++;
@@ -332,13 +363,37 @@ class ProviderRepository extends Repository implements ProvidersRepositoryInterf
             (CASE WHEN EXISTS(SELECT 1 FROM `provider_service_map` WHERE `provider_id` = p.id) THEN 5 ELSE 0 END)
         )";
 
+        $joinServices = false;
+        $joinAreas = false;
+
+        if (!empty($criteria['service'])) {
+            $joinServices = true;
+        }
+
+        if (!empty($criteria['area'])) {
+            $joinAreas = true;
+        }
+
+        if (!empty($criteria['keyword'])) {
+            $joinServices = true;
+            $joinAreas = true;
+        }
+
         $sql = "SELECT COUNT(DISTINCT p.id) FROM `providers` p
                 LEFT JOIN `services` s ON p.primary_service_id = s.id
                 LEFT JOIN `cities` c ON p.city_id = c.id";
 
-        if (!empty($criteria['service'])) {
+        if ($joinServices) {
             $sql .= " LEFT JOIN `provider_service_map` psm ON p.id = psm.provider_id
                       LEFT JOIN `services` s2 ON psm.service_id = s2.id";
+        }
+
+        if ($joinAreas) {
+            $sql .= " LEFT JOIN `provider_area_map` pam ON p.id = pam.provider_id
+                      LEFT JOIN `areas` a ON pam.area_id = a.id";
+        }
+
+        if (!empty($criteria['service'])) {
             $where[] = "(s.slug = :service1 OR s2.slug = :service2)";
             $params['service1'] = $criteria['service'];
             $params['service2'] = $criteria['service'];
@@ -350,8 +405,6 @@ class ProviderRepository extends Repository implements ProvidersRepositoryInterf
         }
 
         if (!empty($criteria['area'])) {
-            $sql .= " INNER JOIN `provider_area_map` pam ON p.id = pam.provider_id
-                      INNER JOIN `areas` a ON pam.area_id = a.id";
             $where[] = "a.slug = :area";
             $params['area'] = $criteria['area'];
         }
@@ -446,7 +499,16 @@ class ProviderRepository extends Repository implements ProvidersRepositoryInterf
                 $paramWord = 'k_word_' . $kIdx;
                 $paramRaw = 'k_raw_' . $kIdx;
                 
-                $keywordConditions[] = "(p.normalized_name LIKE :{$paramWord} OR p.phone LIKE :{$paramRaw} OR p.short_description_ar LIKE :{$paramWord} OR p.description_ar LIKE :{$paramWord})";
+                $keywordConditions[] = "(
+                    p.normalized_name LIKE :{$paramWord} OR 
+                    p.phone LIKE :{$paramRaw} OR 
+                    p.short_description_ar LIKE :{$paramWord} OR 
+                    p.description_ar LIKE :{$paramWord} OR 
+                    s.display_name_ar LIKE :{$paramWord} OR 
+                    s2.display_name_ar LIKE :{$paramWord} OR 
+                    c.display_name_ar LIKE :{$paramWord} OR 
+                    a.display_name_ar LIKE :{$paramWord}
+                )";
                 $params[$paramWord] = '%' . $normalizedWord . '%';
                 $params[$paramRaw] = '%' . $word . '%';
                 $kIdx++;

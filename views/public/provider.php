@@ -60,7 +60,6 @@ echo json_ld_local_business($schemaData);
     <div id="contact-error-banner" class="alert alert-danger" style="display: none; margin-bottom: 20px;"></div>
 
     <div class="profile-layout">
-        
         <!-- Sidebar Info -->
         <aside class="profile-sidebar" style="display: flex; flex-direction: column; gap: 20px;">
             <!-- Main Details Card -->
@@ -75,6 +74,32 @@ echo json_ld_local_business($schemaData);
                     <?= e($provider['service_name']) ?>
                 </span>
 
+                <!-- Verification status badge (Priority 1.5) -->
+                <?php
+                $vStatus = $provider['verification_status'] ?? 'unverified';
+                $badgeColor = '#6b7280';
+                $badgeBg = '#f3f4f6';
+                $badgeText = 'غير موثق';
+                if ($vStatus === 'verified') {
+                    $badgeColor = '#15803d';
+                    $badgeBg = '#dcfce7';
+                    $badgeText = '✅ حساب موثق';
+                } elseif (in_array($vStatus, ['pending_review', 'documents_uploaded', 'resubmitted'])) {
+                    $badgeColor = '#b45309';
+                    $badgeBg = '#fef3c7';
+                    $badgeText = '⏳ قيد المراجعة';
+                } elseif ($vStatus === 'rejected') {
+                    $badgeColor = '#b91c1c';
+                    $badgeBg = '#fee2e2';
+                    $badgeText = '❌ مرفوض التوثيق';
+                }
+                ?>
+                <div style="margin-bottom: 15px;">
+                    <span style="font-size: 0.85rem; font-weight: 700; color: <?= $badgeColor ?>; background-color: <?= $badgeBg ?>; padding: 6px 14px; border-radius: 20px; display: inline-block;">
+                        <?= $badgeText ?>
+                    </span>
+                </div>
+
                 <!-- Contact Buttons (Priority 1) -->
                 <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
                     <button class="btn btn-primary contact-btn" data-provider-id="<?= (int)$provider['id'] ?>" data-method="phone_call" style="font-size: 1rem; font-weight: 700; width: 100%;">
@@ -83,6 +108,17 @@ echo json_ld_local_business($schemaData);
                     <button class="btn btn-whatsapp-outline contact-btn" data-provider-id="<?= (int)$provider['id'] ?>" data-method="whatsapp_message" style="font-size: 1rem; font-weight: 700; width: 100%;">
                         💬 مراسلة عبر واتساب
                     </button>
+                </div>
+
+                <!-- Platform Score (Priority 1.7) -->
+                <div class="score-card" style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px; text-align: right;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">موثوقية المنصة:</span>
+                        <span style="font-size: 1rem; font-weight: 800; color: var(--accent-primary);"><?= (int)$provider['platform_score'] ?>%</span>
+                    </div>
+                    <div style="width: 100%; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden;">
+                        <div style="width: <?= (int)$provider['platform_score'] ?>%; height: 100%; background: linear-gradient(90deg, var(--accent-primary), var(--primary)); border-radius: 4px;"></div>
+                    </div>
                 </div>
 
                 <!-- Verified status badges (Priority 2) -->
@@ -118,7 +154,7 @@ echo json_ld_local_business($schemaData);
             <div class="card" style="padding: 20px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; font-size: 0.9rem; display: flex; flex-direction: column; gap: 12px;">
                 <div>
                     <span style="color: var(--text-secondary);">نوع العمل:</span>
-                    <strong style="float: left; color: var(--text-primary);"><?= $provider['business_type'] === 'company' ? 'شركة / ورشة' : 'حرفي مستقل' ?></strong>
+                    <strong style="float: left; color: var(--text-primary);"><?= ($provider['business_type'] === 'company' || $provider['business_type'] === 'business') ? 'شركة / مؤسسة' : 'حرفي مستقل' ?></strong>
                 </div>
                 <div>
                     <span style="color: var(--text-secondary);">سنوات الخبرة:</span>
@@ -128,6 +164,17 @@ echo json_ld_local_business($schemaData);
                     <span style="color: var(--text-secondary);">التواجد اليوم:</span>
                     <strong style="float: left; color: <?= $provider['available_today'] ? 'var(--success-color)' : 'var(--danger-color)' ?>;"><?= $provider['available_today'] ? 'متاح للعمل' : 'غير متاح حالياً' ?></strong>
                 </div>
+                <?php if (!empty($provider['working_hours'])): ?>
+                <div>
+                    <span style="color: var(--text-secondary);">ساعات العمل:</span>
+                    <strong style="float: left; color: var(--text-primary);"><?= e($provider['working_hours']) ?></strong>
+                </div>
+                <?php endif; ?>
+                <?php if (!empty($provider['updated_at'])): ?>
+                <div style="border-top: 1px solid var(--border-color); padding-top: 10px; margin-top: 5px; font-size: 0.8rem; color: var(--text-muted); text-align: center;">
+                    آخر تحديث للملف: <?= date('Y-m-d', strtotime($provider['updated_at'])) ?>
+                </div>
+                <?php endif; ?>
             </div>
         </aside>
 
@@ -190,6 +237,11 @@ echo json_ld_local_business($schemaData);
                 </section>
             <?php endif; ?>
 
+            <!-- Related services and providers widgets -->
+            <?php 
+            require APP_DIR . '/views/components/related_providers.php';
+            require APP_DIR . '/views/components/related_services.php';
+            ?>
         </main>
     </div>
 </div>

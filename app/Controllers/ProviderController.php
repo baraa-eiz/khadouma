@@ -192,6 +192,32 @@ class ProviderController extends Controller
         $services = $this->serviceRepo->getAllActive();
         $cities = $this->citiesRepo->search(['is_active' => 1, 'is_deleted' => 0], 'sort_order', 'ASC', 100);
 
+        // Fetch matching services based on search criteria
+        $matchingServices = [];
+        if (!empty($filters['keyword'])) {
+            $normalizedKeyword = normalize_arabic($filters['keyword']);
+            $keywords = preg_split('/\s+/u', trim($normalizedKeyword), -1, PREG_SPLIT_NO_EMPTY);
+            $serviceConditions = [];
+            $sParams = [];
+            $sIdx = 0;
+            foreach ($keywords as $word) {
+                $param = 's_word_' . $sIdx;
+                // Match normalized arabic
+                $serviceConditions[] = "(display_name_ar LIKE :{$param} OR description_ar LIKE :{$param} OR key LIKE :{$param})";
+                $sParams[$param] = '%' . $word . '%';
+                $sIdx++;
+            }
+            if (!empty($serviceConditions)) {
+                $serviceSql = "SELECT * FROM `services` WHERE `is_active` = 1 AND `deleted_at` IS NULL AND (" . implode(' AND ', $serviceConditions) . ")";
+                $matchingServices = Database::getInstance()->fetchAll($serviceSql, $sParams);
+            }
+        } elseif (!empty($filters['service'])) {
+            $selSrv = $this->serviceRepo->findBySlug($filters['service']);
+            if ($selSrv) {
+                $matchingServices = [$selSrv];
+            }
+        }
+
         // Selected entities
         $selectedService = null;
         if (!empty($filters['service'])) {
@@ -346,7 +372,8 @@ class ProviderController extends Controller
             'perPage' => $perPage,
             'faqEntries' => $faqEntries,
             'breadcrumbs' => $breadcrumbs,
-            'seoData' => $seoData
+            'seoData' => $seoData,
+            'matchingServices' => $matchingServices
         ]);
     }
 

@@ -95,6 +95,7 @@ $router->get('/provider/login', [App\Controllers\Provider\AuthController::class,
 $router->get('/provider/auth/google', [App\Controllers\Provider\AuthController::class, 'googleAuth'], [App\Middleware\ProviderGuest::class]);
 $router->get('/provider/auth/google/stub', [App\Controllers\Provider\AuthController::class, 'showGoogleStub'], [App\Middleware\ProviderGuest::class]);
 $router->post('/provider/auth/google/stub', [App\Controllers\Provider\AuthController::class, 'processGoogleStub'], [App\Middleware\ProviderGuest::class]);
+$router->post('/provider/auth/dev', [App\Controllers\Provider\AuthController::class, 'processDevLogin'], [App\Middleware\ProviderGuest::class]);
 $router->post('/provider/logout', [App\Controllers\Provider\AuthController::class, 'logout'], [App\Middleware\ProviderAuth::class]);
 
 $router->get('/provider/dashboard', [App\Controllers\Provider\DashboardController::class, 'index'], [App\Middleware\ProviderAuth::class]);

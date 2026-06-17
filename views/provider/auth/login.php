@@ -220,6 +220,33 @@ use App\Core\Config;
             <span>الدخول السريع باستخدام حساب Google</span>
         </a>
 
+        <?php if (isset($devLoginEnabled) && $devLoginEnabled): ?>
+            <!-- Developer Credentials Form -->
+            <form action="<?= url('provider/auth/dev') ?>" method="POST" style="margin-top: 25px; text-align: right; display: flex; flex-direction: column; gap: 15px;">
+                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+                
+                <div style="text-align: center; margin-bottom: 5px; color: var(--text-muted); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <span style="flex-grow: 1; height: 1px; background: #e5e7eb;"></span>
+                    <span>الدخول المباشر للمطورين (Dev Login)</span>
+                    <span style="flex-grow: 1; height: 1px; background: #e5e7eb;"></span>
+                </div>
+
+                <div>
+                    <label for="username" style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">معرّف مقدم الخدمة (ID / Slug / البريد)</label>
+                    <input type="text" id="username" name="username" placeholder="مثال: 37 أو plumber-ali" required style="width: 100%; padding: 12px; border: 1px solid #dadce0; border-radius: 10px; font-family: inherit; font-size: 0.95rem; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='#dadce0'">
+                </div>
+
+                <div>
+                    <label for="password" style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">كلمة مرور التطوير</label>
+                    <input type="password" id="password" name="password" placeholder="أدخل كلمة مرور التطوير الخاصة بالمنصة" required style="width: 100%; padding: 12px; border: 1px solid #dadce0; border-radius: 10px; font-family: inherit; font-size: 0.95rem; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='#dadce0'">
+                </div>
+
+                <button type="submit" style="width: 100%; padding: 12px; background: var(--primary); border: none; color: #fff; font-family: inherit; font-size: 1rem; font-weight: 700; border-radius: 10px; cursor: pointer; transition: background 0.2s; margin-top: 5px;" onmouseover="this.style.background='var(--primary-hover)'" onmouseout="this.style.background='var(--primary)'">
+                    تسجيل الدخول المباشر 🔑
+                </button>
+            </form>
+        <?php endif; ?>
+
         <!-- Footer Notes -->
         <div class="footer-note">
             ملاحظة: البوابة تتكامل حصرياً مع نظام التحقق الموحد من Google لضمان أمن حسابات المهنيين ومصداقية التقييمات.

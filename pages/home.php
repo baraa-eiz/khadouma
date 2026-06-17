@@ -137,10 +137,7 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
                         
                         <p class="provider-desc-text" style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; height: 2.6rem; text-align: right;">' . e($p['short_description_ar']) . '</p>
                     ';
-                    echo App\Core\View::render('components/ClickableCard', [
-                        'href' => base_url('provider/' . $p['slug']),
-                        'content' => $cardContent
-                    ]);
+                    echo '<div class="provider-card-body" style="flex-grow: 1;">' . $cardContent . '</div>';
                     ?>
                     
                     <div>
