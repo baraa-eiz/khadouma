@@ -37,7 +37,7 @@ class ProviderRepository extends Repository implements ProvidersRepositoryInterf
      */
     public function getLatestApproved(int $limit = 10): array
     {
-        $sql = "SELECT p.*, s.display_name_ar as service_name, c.display_name_ar as city_name 
+        $sql = "SELECT p.*, s.display_name_ar as service_name, s.slug as service_slug, c.display_name_ar as city_name, c.slug as city_slug 
                 FROM `providers` p
                 LEFT JOIN `services` s ON p.primary_service_id = s.id
                 LEFT JOIN `cities` c ON p.city_id = c.id

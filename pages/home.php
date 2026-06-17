@@ -126,7 +126,7 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
                             </div>
                             <div class="provider-info-header" style="display: flex; flex-direction: column; justify-content: center;">
                                 <h3 class="provider-name" style="font-size: 1.1rem; font-weight: 700; margin: 0; color: var(--text-primary); text-align: right;">' . e($p['display_name_ar']) . '</h3>
-                                <span class="provider-service-tag" style="font-size: 0.8rem; font-weight: 700; color: var(--accent-primary); background-color: #fdf2ee; padding: 2px 8px; border-radius: 4px; align-self: flex-start; margin-top: 4px;">' . e($p['service_name']) . '</span>
+                                <a href="' . base_url('services/' . $p['service_slug']) . '" class="provider-service-tag" style="font-size: 0.8rem; font-weight: 700; color: var(--accent-primary); background-color: #fdf2ee; padding: 2px 8px; border-radius: 4px; align-self: flex-start; margin-top: 4px; text-decoration: none;">' . e($p['service_name']) . '</a>
                             </div>
                         </div>
                         
