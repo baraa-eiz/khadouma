@@ -104,6 +104,16 @@ $router->get('/provider/wizard', [App\Controllers\Provider\WizardController::cla
 $router->post('/provider/wizard/save', [App\Controllers\Provider\WizardController::class, 'saveStep'], [App\Middleware\ProviderAuth::class]);
 $router->post('/provider/wizard/submit', [App\Controllers\Provider\WizardController::class, 'submitReview'], [App\Middleware\ProviderAuth::class]);
 
+// User Portal Routes
+$router->get('/user/login', [App\Controllers\User\AuthController::class, 'showLogin'], [App\Middleware\UserGuest::class]);
+$router->post('/user/login', [App\Controllers\User\AuthController::class, 'processLogin'], [App\Middleware\UserGuest::class]);
+$router->post('/user/logout', [App\Controllers\User\AuthController::class, 'logout'], [App\Middleware\UserAuth::class]);
+
+$router->get('/user/dashboard', [App\Controllers\User\DashboardController::class, 'index'], [App\Middleware\UserAuth::class]);
+$router->get('/user/profile/edit', [App\Controllers\User\DashboardController::class, 'edit'], [App\Middleware\UserAuth::class]);
+$router->post('/user/profile/edit', [App\Controllers\User\DashboardController::class, 'update'], [App\Middleware\UserAuth::class]);
+$router->post('/user/favorites/toggle', [App\Controllers\User\DashboardController::class, 'toggleFavorite'], [App\Middleware\UserAuth::class]);
+
 // Wildcard route for provider public profile - must be after static /provider/ routes
 $router->post('/provider/{slug}/review', [App\Controllers\ReviewController::class, 'submit']);
 $router->get('/provider/{slug}', [App\Controllers\ProviderController::class, 'show']);
@@ -116,6 +126,9 @@ require dirname(__DIR__) . '/app/Modules/Locations/Routes.php';
 
 // Providers CRUD Module
 require dirname(__DIR__) . '/app/Modules/Providers/Routes.php';
+
+// Users CRUD Module
+require dirname(__DIR__) . '/app/Modules/Users/Routes.php';
 
 // FAQ Static Page
 $router->get('/faq', function() {

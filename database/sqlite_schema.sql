@@ -317,3 +317,38 @@ CREATE TABLE IF NOT EXISTS "provider_drafts" (
   "created_at" TEXT DEFAULT CURRENT_TIMESTAMP,
   "updated_at" TEXT DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS "user_accounts" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "public_id" VARCHAR(36) NOT NULL UNIQUE,
+  "display_name" VARCHAR(150) NOT NULL,
+  "email" VARCHAR(150) NULL UNIQUE,
+  "phone" VARCHAR(30) NULL UNIQUE,
+  "avatar" VARCHAR(255) NULL,
+  "city_id" INTEGER NULL,
+  "area_id" INTEGER NULL,
+  "default_address" TEXT NULL,
+  "preferred_contact_method" VARCHAR(50) NOT NULL DEFAULT 'phone',
+  "preferred_language" VARCHAR(10) NULL DEFAULT 'ar',
+  "timezone" VARCHAR(100) NULL DEFAULT 'Asia/Damascus',
+  "marketing_opt_in" INTEGER NULL DEFAULT 0,
+  "notification_preferences" TEXT NULL,
+  "status" VARCHAR(50) NOT NULL DEFAULT 'active',
+  "last_login_at" TEXT NULL DEFAULT NULL,
+  "created_at" TEXT DEFAULT CURRENT_TIMESTAMP,
+  "updated_at" TEXT DEFAULT CURRENT_TIMESTAMP,
+  "deleted_at" TEXT NULL DEFAULT NULL,
+  FOREIGN KEY ("city_id") REFERENCES "cities" ("id") ON DELETE SET NULL,
+  FOREIGN KEY ("area_id") REFERENCES "areas" ("id") ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS "user_favorites" (
+  "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+  "user_id" INTEGER NOT NULL,
+  "entity_type" VARCHAR(50) NOT NULL,
+  "entity_public_id" VARCHAR(36) NOT NULL,
+  "created_at" TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY ("user_id") REFERENCES "user_accounts" ("id") ON DELETE CASCADE,
+  UNIQUE ("user_id", "entity_type", "entity_public_id")
+);
+

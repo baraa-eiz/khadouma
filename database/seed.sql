@@ -414,3 +414,20 @@ INSERT INTO `provider_accounts` (`email`, `google_id`, `display_name`, `avatar_u
 -- ------------------------------------------------------------
 INSERT INTO `provider_drafts` (`provider_id`, `provider_account_id`, `display_name_ar`, `slug`, `business_type`, `phone`, `whatsapp`, `email`, `city_id`, `primary_service_id`, `short_description_ar`, `description_ar`, `years_experience`, `starting_price`, `price_unit`, `website`, `working_hours`, `social_links`, `status`) VALUES
 (NULL, 2, 'منشأة الهدى للخدمات', 'al-hoda-services', 'company', '+963999111222', '+963999111222', 'alhoda@gmail.local', 1, 1, 'شركة تنظيف وتعقيم متكاملة في كافة مناطق دمشق', 'نقدم خدمات التنظيف الجاف وتعقيم الشقق والفلل السكنية والمباني التجارية مع أحدث الأجهزة والمواد الصديقة للبيئة.', 5, 50000.00, 'hour', 'https://alhoda.services.local', '8:00 AM - 10:00 PM', '{"facebook":"https://facebook.com/alhoda","instagram":"https://instagram.com/alhoda"}', 'pending_review');
+
+-- ------------------------------------------------------------
+-- 19. USER ACCOUNTS (Stage 3.8 User Portal Foundation)
+-- ------------------------------------------------------------
+INSERT INTO `user_accounts` (`public_id`, `display_name`, `email`, `phone`, `avatar`, `city_id`, `area_id`, `default_address`, `status`) VALUES
+('u50e8400-e29b-41d4-a716-446655440001', 'أبو ماهر العميل', 'abumaher@gmail.local', '+963933222111', NULL, 1, 1, 'دمشق، المزة، أوتستراد المزة بجوار جامع الكرم', 'active'),
+('u50e8400-e29b-41d4-a716-446655440002', 'أحمد السوري', 'ahmad.souri@gmail.local', '+963944333222', NULL, 1, 2, 'دمشق، كفرسوسة، اللوان', 'active'),
+('u50e8400-e29b-41d4-a716-446655440003', 'عميل موقوف', 'suspended.user@gmail.local', '+963955444333', NULL, 2, 11, 'ريف دمشق، جرمانا', 'suspended');
+
+-- ------------------------------------------------------------
+-- 20. USER FAVORITES (Stage 3.8 User Portal Foundation)
+-- ------------------------------------------------------------
+INSERT INTO `user_favorites` (`user_id`, `entity_type`, `entity_public_id`) VALUES
+(1, 'provider', 'abu-ahmad-plumber'), -- Abu Ahmad Plumber
+(1, 'service', '550e8400-e29b-41d4-a716-446655440001'), -- Cleaning
+(2, 'provider', 'um-ahmad-cleaning');
+

@@ -42,6 +42,13 @@ return [
         'active_pattern' => '/admin/providers*'
     ],
     [
+        'key' => 'users',
+        'label' => 'المستخدمين العامة',
+        'icon' => 'users',
+        'url' => '/admin/users',
+        'active_pattern' => '/admin/users*'
+    ],
+    [
         'key' => 'drafts',
         'label' => 'مراجعة طلبات التعديل',
         'icon' => 'alert-triangle',

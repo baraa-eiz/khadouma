@@ -41,6 +41,9 @@ class Session
      */
     public static function regenerate(bool $deleteOldSession = true): bool
     {
+        if (php_sapi_name() === 'cli' || headers_sent()) {
+            return true;
+        }
         return session_regenerate_id($deleteOldSession);
     }
 

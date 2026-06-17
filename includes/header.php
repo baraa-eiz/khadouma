@@ -75,11 +75,17 @@ $metaDesc = isset($metaDesc) ? $metaDesc : '';
                 <!-- User Auth Actions -->
                 <div class="nav-actions">
                     <?php if (!empty($_SESSION['admin_logged_in'])): ?>
-                        <span class="user-welcome">مرحباً، <?= e($_SESSION['admin_name']) ?></span>
-                        <a href="<?= admin_url('dashboard.php') ?>" class="btn btn-secondary">لوحة التحكم</a>
-                        <a href="<?= admin_url('logout.php') ?>" class="btn btn-outline btn-sm">تسجيل الخروج</a>
+                        <span class="user-welcome">مرحباً، <?= e($_SESSION['admin_name'] ?? 'المشرف') ?></span>
+                        <a href="<?= url('admin/dashboard') ?>" class="btn btn-secondary">لوحة التحكم</a>
+                    <?php elseif (!empty($_SESSION['provider_logged_in'])): ?>
+                        <span class="user-welcome">مرحباً، <?= e($_SESSION['provider_name'] ?? 'المزود') ?></span>
+                        <a href="<?= url('provider/dashboard') ?>" class="btn btn-secondary">بوابة المزود</a>
+                    <?php elseif (!empty($_SESSION['user_logged_in'])): ?>
+                        <span class="user-welcome">مرحباً، <?= e($_SESSION['user_display_name'] ?? 'المستخدم') ?></span>
+                        <a href="<?= url('user/dashboard') ?>" class="btn btn-secondary">بوابة المستخدم</a>
                     <?php else: ?>
-                        <a href="<?= admin_url('login.php') ?>" class="btn btn-outline btn-sm">لوحة الإشراف</a>
+                        <a href="<?= url('user/login') ?>" class="btn btn-secondary">دخول المستخدم</a>
+                        <a href="<?= url('provider/login') ?>" class="btn btn-outline btn-sm">بوابة المزودين</a>
                     <?php endif; ?>
                 </div>
             </div>
