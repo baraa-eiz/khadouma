@@ -31,12 +31,17 @@ try {
     echo "--- 1. Testing database schema integrity ---\n";
     
     // Check reviews table columns
-    $reviewsColumns = $db->fetchAll("PRAGMA table_info(`reviews`)");
+    $reviewsColumns = [];
+    try {
+        $reviewsColumns = $db->fetchAll("PRAGMA table_info(`reviews`)");
+    } catch (\Exception $ex) {
+        // ignore SQLite-specific errors
+    }
     if (empty($reviewsColumns)) {
         // Fallback for MySQL if running on MySQL
         try {
             $reviewsColumns = $db->fetchAll("DESCRIBE `reviews`");
-        } catch (\PDOException $ex) {
+        } catch (\Exception $ex) {
             // ignore
         }
     }
@@ -57,11 +62,16 @@ try {
     echo "✔ DB Schema: reviews table is intact with ip_hash, user_agent_hash, and comment columns.\n";
 
     // Check providers table columns
-    $providersColumns = $db->fetchAll("PRAGMA table_info(`providers`)");
+    $providersColumns = [];
+    try {
+        $providersColumns = $db->fetchAll("PRAGMA table_info(`providers`)");
+    } catch (\Exception $ex) {
+        // ignore SQLite-specific errors
+    }
     if (empty($providersColumns)) {
         try {
             $providersColumns = $db->fetchAll("DESCRIBE `providers`");
-        } catch (\PDOException $ex) {}
+        } catch (\Exception $ex) {}
     }
 
     $hasVerificationStatus = false;
