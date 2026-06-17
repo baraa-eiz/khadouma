@@ -30,8 +30,23 @@ try {
     $db = App\Core\Database::getInstance();
 
     // 2. Validate users table exists and has correct columns
-    $tableInfo = $db->fetchAll("PRAGMA table_info(user_accounts)");
-    $columns = array_column($tableInfo, 'name');
+    $tableInfo = [];
+    $columns = [];
+    try {
+        $tableInfo = $db->fetchAll("PRAGMA table_info(user_accounts)");
+        $columns = array_column($tableInfo, 'name');
+    } catch (\Exception $ex) {
+        // ignore SQLite specific error
+    }
+    if (empty($tableInfo)) {
+        try {
+            $tableInfo = $db->fetchAll("DESCRIBE user_accounts");
+            $columns = array_column($tableInfo, 'Field');
+        } catch (\Exception $ex) {
+            throw new \Exception("Could not describe user_accounts table: " . $ex->getMessage());
+        }
+    }
+
     $requiredColumns = [
         'id', 'public_id', 'display_name', 'email', 'phone', 
         'avatar', 'city_id', 'area_id', 'default_address', 
