@@ -196,7 +196,7 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
             <?php else: ?>
                 <div class="results-grid">
                     <?php foreach ($providers as $prov): ?>
-                        <article class="card provider-card">
+                        <article class="card provider-card clickable">
                             <?php
                             $cardContent = '
                                 <div class="provider-header" style="display: flex; gap: 15px; margin-bottom: 15px;">

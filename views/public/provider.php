@@ -244,6 +244,14 @@ echo json_ld_local_business($schemaData);
 
             <!-- Related services and providers widgets -->
             <?php 
+            $currentService = [
+                'slug' => $provider['service_slug'],
+                'display_name_ar' => $provider['service_name']
+            ];
+            $currentCity = [
+                'slug' => $provider['city_slug'] ?? '',
+                'display_name_ar' => $provider['city_name'] ?? ''
+            ];
             require APP_DIR . '/views/components/related_providers.php';
             require APP_DIR . '/views/components/related_services.php';
             ?>

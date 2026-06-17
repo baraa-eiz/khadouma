@@ -85,3 +85,32 @@ if (!function_exists('admin_url')) {
     }
 }
 
+if (!function_exists('is_self_link')) {
+    /**
+     * Check if a given URL matches the current request URL (path and sorted query parameters).
+     */
+    function is_self_link(string $href): bool
+    {
+        $currentUri = $_SERVER['REQUEST_URI'] ?? '/';
+        $currentPath = parse_url($currentUri, PHP_URL_PATH) ?: '/';
+        $targetPath = parse_url($href, PHP_URL_PATH) ?: '/';
+
+        if (trim($currentPath, '/') !== trim($targetPath, '/')) {
+            return false;
+        }
+
+        $currentQueryStr = parse_url($currentUri, PHP_URL_QUERY) ?: '';
+        $targetQueryStr = parse_url($href, PHP_URL_QUERY) ?: '';
+
+        $currentQuery = [];
+        parse_str($currentQueryStr, $currentQuery);
+        $targetQuery = [];
+        parse_str($targetQueryStr, $targetQuery);
+
+        ksort($currentQuery);
+        ksort($targetQuery);
+
+        return $currentQuery === $targetQuery;
+    }
+}
+

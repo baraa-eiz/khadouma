@@ -550,7 +550,8 @@ img {
     transition: var(--transition-smooth);
 }
 
-.card:hover {
+.card.clickable:hover,
+a.card:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-medium);
 }

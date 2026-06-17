@@ -23,6 +23,7 @@ $cityRepo = new CityRepository();
 // Load required data from database
 $services = $serviceRepo->getAllActive();
 $cities = $cityRepo->getAllActive();
+$latestServices = $serviceRepo->search(['is_active' => 1], 'created_at', 'DESC', 6);
 $latestProviders = $providerRepo->getLatestApproved(6);
 
 // Fetch profile images for latest providers
@@ -109,6 +110,29 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
     </div>
 </section>
 
+<!-- Section 2: Recently Approved Services -->
+<section class="latest-services-section container" style="margin-top: 60px;">
+    <h2 class="section-title">أحدث الخدمات المعتمدة</h2>
+    <div class="grid grid-5" style="margin-top: 30px;">
+        <?php foreach ($latestServices as $srv): ?>
+            <a href="<?= base_url('services/' . $srv['slug']) ?>" class="card service-card">
+                <div class="service-icon">
+                    <?php
+                    $icon = '🛠️';
+                    if ($srv['key'] === 'cleaning') $icon = '🧹';
+                    if ($srv['key'] === 'plumbing') $icon = '🚰';
+                    if ($srv['key'] === 'electricity') $icon = '⚡';
+                    if ($srv['key'] === 'painting') $icon = '🎨';
+                    if ($srv['key'] === 'moving') $icon = '📦';
+                    echo $icon;
+                    ?>
+                </div>
+                <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin-top: 5px;"><?= e($srv['short_name_ar']) ?></h3>
+            </a>
+        <?php endforeach; ?>
+    </div>
+</section>
+
 <!-- Featured and Latest Providers -->
 <section class="providers-section container" style="margin-top: 80px; margin-bottom: 40px;">
     <h2 class="section-title">أحدث الحرفيين المعتمدين بدمشق</h2>
@@ -117,7 +141,7 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
             <p class="text-center" style="grid-column: 1 / -1; color: var(--text-secondary); padding: 40px 0;">لا يوجد مزودو خدمات معتمدون حالياً.</p>
         <?php else: ?>
             <?php foreach ($latestProviders as $p): ?>
-                <div class="card provider-card" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+                <div class="card provider-card clickable" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
                     <?php
                     $cardContent = '
                         <div class="provider-header" style="display: flex; gap: 15px; margin-bottom: 15px;">
@@ -142,7 +166,12 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
                         
                         <p class="provider-desc-text" style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; height: 2.6rem; text-align: right;">' . e($p['short_description_ar']) . '</p>
                     ';
-                    echo '<div class="provider-card-body" style="flex-grow: 1;">' . $cardContent . '</div>';
+                    echo App\Core\View::render('components/ClickableCard', [
+                        'href' => base_url('provider/' . $p['slug']),
+                        'content' => $cardContent,
+                        'class' => 'provider-card-body',
+                        'style' => 'flex-grow: 1;'
+                    ]);
                     ?>
                     
                     <div>

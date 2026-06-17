@@ -30,28 +30,32 @@ if (!empty($related)):
     <h3 class="block-title" style="font-size: 1.4rem; font-weight: 800; margin-bottom: 25px; font-family: var(--font-arabic); color: var(--text-primary);">مزودو خدمة آخرون في <?= e($provider['city_name']) ?></h3>
     <div class="results-grid">
         <?php foreach ($related as $rp): ?>
-            <article class="card provider-card" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
-                <div>
+            <article class="card provider-card clickable" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+                <?php
+                $cardContent = '
                     <div class="provider-header" style="display: flex; gap: 15px; margin-bottom: 15px;">
                         <div class="provider-img-wrapper" style="width: 50px; height: 50px; border-radius: 50%; overflow: hidden; border: 2px solid var(--border-color); flex-shrink: 0;">
-                            <img src="<?= get_provider_image($rp['profile_image'] ?? null, 50, 50, '👨‍🔧') ?>" alt="صورة <?= e($rp['display_name_ar']) ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                            <img src="' . get_provider_image($rp['profile_image'] ?? null, 50, 50, '👨‍🔧') . '" alt="صورة ' . e($rp['display_name_ar']) . '" style="width: 100%; height: 100%; object-fit: cover;">
                         </div>
                         <div class="provider-info-header" style="display: flex; flex-direction: column; justify-content: center;">
-                            <h4 class="provider-name" style="font-size: 1rem; font-weight: 700; margin: 0;">
-                                <a href="<?= base_url('provider/' . $rp['slug']) ?>" style="color: var(--text-primary); text-decoration: none;"><?= e($rp['display_name_ar']) ?></a>
-                            </h4>
-                            <?= App\Core\View::render('components/ServiceChip', [
+                            <h4 class="provider-name" style="font-size: 1rem; font-weight: 700; margin: 0; color: var(--text-primary); text-align: right;">' . e($rp['display_name_ar']) . '</h4>
+                            ' . App\Core\View::render('components/ServiceChip', [
                                 'service_slug' => $rp['service_slug'],
                                 'service_name' => $rp['service_name'],
                                 'city_slug' => $rp['city_slug'] ?? '',
                                 'style' => 'font-size: 0.75rem; padding: 1px 6px; margin-top: 4px;'
-                            ]) ?>
+                            ]) . '
                         </div>
                     </div>
-                    <p class="provider-desc-text" style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; height: 2.6rem;">
-                        <?= e($rp['short_description_ar']) ?>
+                    <p class="provider-desc-text" style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; height: 2.6rem; text-align: right;">
+                        ' . e($rp['short_description_ar']) . '
                     </p>
-                </div>
+                ';
+                echo App\Core\View::render('components/ClickableCard', [
+                    'href' => base_url('provider/' . $rp['slug']),
+                    'content' => $cardContent
+                ]);
+                ?>
                 <div>
                     <div class="provider-meta" style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 10px; margin-bottom: 15px; font-size: 0.8rem; color: var(--text-secondary);">
                         <span class="provider-location">📍 <?= e($rp['city_name']) ?></span>
