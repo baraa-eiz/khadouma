@@ -101,6 +101,10 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
                         <?php if ($selectedArea): ?>
                             (<?= e($selectedArea['display_name_ar']) ?>)
                         <?php endif; ?>
+                    <?php elseif ($selectedService): ?>
+                        خدمات <?= e($selectedService['display_name_ar']) ?> في سوريا
+                    <?php elseif ($selectedCity): ?>
+                        خدمات وصيانة في <?= e($selectedCity['display_name_ar']) ?>
                     <?php else: ?>
                         مزودو الخدمات المتاحون
                     <?php endif; ?>
@@ -204,9 +208,12 @@ if (isset($isLayoutCalled) && $isLayoutCalled) {
                                             ' . e($prov['display_name_ar']) . '
                                             ' . ($prov['verified'] ? '<span class="badge-tag badge-verified" style="font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; line-height: 1; background-color: #eef7f0; color: var(--success-color);">موثق</span>' : '') . '
                                         </h3>
-                                        <span class="provider-service-tag" style="font-size: 0.8rem; font-weight: 700; color: var(--accent-primary); background-color: #fdf2ee; padding: 2px 8px; border-radius: 4px; align-self: flex-start; margin-top: 4px;">
-                                            ' . e($prov['service_name']) . '
-                                        </span>
+                                        ' . \App\Core\View::render('components/ServiceChip', [
+                                            'service_slug' => $prov['service_slug'],
+                                            'service_name' => $prov['service_name'],
+                                            'city_slug' => $prov['city_slug'] ?? '',
+                                            'style' => 'font-size: 0.8rem; padding: 2px 8px; margin-top: 4px; align-self: flex-start;'
+                                        ]) . '
                                     </div>
                                 </div>
 

@@ -174,7 +174,7 @@ class ProviderRepository extends Repository implements ProvidersRepositoryInterf
             $joinAreas = true;
         }
 
-        $sql = "SELECT DISTINCT p.*, s.display_name_ar as service_name, c.display_name_ar as city_name,
+        $sql = "SELECT DISTINCT p.*, s.display_name_ar as service_name, s.slug as service_slug, c.display_name_ar as city_name, c.slug as city_slug,
                 $completionScoreSql AS completion_score 
                 FROM `providers` p
                 LEFT JOIN `services` s ON p.primary_service_id = s.id

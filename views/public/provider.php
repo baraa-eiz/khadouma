@@ -70,9 +70,14 @@ echo json_ld_local_business($schemaData);
 
                 <h1 style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary); margin-bottom: 5px;"><?= e($provider['display_name_ar']) ?></h1>
                 
-                <span style="font-size: 0.9rem; font-weight: 700; color: var(--accent-primary); background-color: #fdf2ee; padding: 4px 12px; border-radius: 4px; display: inline-block; margin-bottom: 15px;">
-                    <?= e($provider['service_name']) ?>
-                </span>
+                <div style="margin-bottom: 15px;">
+                    <?= App\Core\View::render('components/ServiceChip', [
+                        'service_slug' => $provider['service_slug'],
+                        'service_name' => $provider['service_name'],
+                        'city_slug' => $provider['city_slug'] ?? '',
+                        'style' => 'font-size: 0.9rem;'
+                    ]) ?>
+                </div>
 
                 <!-- Verification status badge (Priority 1.5) -->
                 <?php

@@ -40,9 +40,12 @@ if (!empty($related)):
                             <h4 class="provider-name" style="font-size: 1rem; font-weight: 700; margin: 0;">
                                 <a href="<?= base_url('provider/' . $rp['slug']) ?>" style="color: var(--text-primary); text-decoration: none;"><?= e($rp['display_name_ar']) ?></a>
                             </h4>
-                            <span class="provider-service-tag" style="font-size: 0.75rem; font-weight: 700; color: var(--accent-primary); background-color: #fdf2ee; padding: 1px 6px; border-radius: 4px; align-self: flex-start; margin-top: 4px;">
-                                <?= e($rp['service_name']) ?>
-                            </span>
+                            <?= App\Core\View::render('components/ServiceChip', [
+                                'service_slug' => $rp['service_slug'],
+                                'service_name' => $rp['service_name'],
+                                'city_slug' => $rp['city_slug'] ?? '',
+                                'style' => 'font-size: 0.75rem; padding: 1px 6px; margin-top: 4px;'
+                            ]) ?>
                         </div>
                     </div>
                     <p class="provider-desc-text" style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 15px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; height: 2.6rem;">
